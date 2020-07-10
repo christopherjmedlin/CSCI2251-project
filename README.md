@@ -1,4 +1,4 @@
-#CSCI2251-project
+# CSCI2251-project
 
 ### Building the project
 
