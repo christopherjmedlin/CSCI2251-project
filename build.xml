@@ -1,0 +1,34 @@
+<project>
+
+    <target name="clean">
+        <delete dir="build"/>
+    </target>
+
+    <target name="compile">
+        <mkdir dir="build/classes"/>
+        <javac srcdir="src" destdir="build/classes"/>
+    </target>
+
+    <target name="jar" depends="compile">
+        <mkdir dir="build/jar"/>
+        <jar destfile="build/jar/client.jar" basedir="build/classes">
+            <manifest>
+                <attribute name="Main-Class" value="com.rentals.rentalmanager.client.Client"/>
+            </manifest>
+        </jar>
+        <jar destfile="build/jar/server.jar" basedir="build/classes">
+            <manifest>
+                <attribute name="Main-Class" value="com.rentals.rentalmanager.server.Server"/>
+            </manifest>
+        </jar>
+    </target>
+
+    <target name="runclient" depends="jar">
+        <java jar="build/jar/client.jar" fork="true"/>
+    </target>
+
+    <target name="runserver" depends="jar">
+        <java jar="build/jar/server.jar" fork="true"/>
+    </target>
+
+</project>
