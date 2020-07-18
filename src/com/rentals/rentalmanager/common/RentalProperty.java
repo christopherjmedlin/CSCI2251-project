@@ -54,4 +54,31 @@ public abstract class RentalProperty {
         // LocalDate objects are immutable and so the reference can be returned
         return this.moveIn;
     }
+
+    //getters and setters
+    public double getBalance() {
+        return balance;
+    }
+
+    public double getPrice() {
+        return price;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public LocalDate getMoveIn() {
+        return moveIn;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("%s %s %s %s %s", getBalance(), getPrice(), getId(), getDescription(),
+                getMoveIn());
+    }
 }

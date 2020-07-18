@@ -82,11 +82,11 @@ public class RentalPropertyTest {
     public static void printProperties() {
         for(RentalProperty currentRental : properties) {
             if(currentRental instanceof SingleHouse) {
-                System.out.println(currentRental + " I am a Single House");
+                System.out.println(currentRental);
             } else if(currentRental instanceof Apartment) {
-                System.out.println(currentRental + "I am an Apartment");
+                System.out.println(currentRental);
             } else
-                System.out.println(currentRental + "I am a Vacation Rental");
+                System.out.println(currentRental);
         }
     }
 }
