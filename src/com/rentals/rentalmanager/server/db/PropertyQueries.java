@@ -18,17 +18,15 @@ public class PropertyQueries {
     private static final Logger LOGGER = Logger.getLogger(PropertyQueries.class.getName());
 
     private static final String URL = "jdbc:derby:properties";
-    private String username;
-    private String password;
 
     private Connection db;
     private PreparedStatement allProperties;
     private PreparedStatement newProperty;
     private PreparedStatement updateProperty;
 
-    public PropertyQueries() {
+    public PropertyQueries(String username, String password) {
         try {
-            this.db = DriverManager.getConnection(URL);
+            this.db = DriverManager.getConnection(URL, username, password);
 
             // TODO i am assuming rows are ordered by the primary key by default, but we should make sure of this
             // returns every property in the db
@@ -39,7 +37,7 @@ public class PropertyQueries {
             // updates every field in a property, with the last argument being the id of it
             this.updateProperty = this.db.prepareStatement(
                     "UPDATE properties " +
-                       "SET balance=? price=? moveIn=? description=? " +
+                       "SET balance=?, price=?, moveIn=?, description=? " +
                        "WHERE id=?"
             );
 
@@ -63,7 +61,9 @@ public class PropertyQueries {
                 String id = results.getString("id");
                 int balance = results.getInt("balance");
                 int price = results.getInt("price");
-                LocalDate moveIn = results.getDate("moveIn").toLocalDate();
+                Date moveInTemp = results.getDate("moveIn");
+                // important to not call toLocalDate if the moveIn is null, else we will have null pointer exception
+                LocalDate moveIn = moveInTemp == null ? null : moveInTemp.toLocalDate();
                 String description = results.getString("description");
 
                 // construct different subclasses of RentalProperty based on the first character of the id
@@ -84,6 +84,7 @@ public class PropertyQueries {
         return null;
     }
 
+    // TODO the move in date should probably by default be the current date.
     public int newProperty(String id) {
         LOGGER.info("Adding new property to database with id " + id + ".");
         try {

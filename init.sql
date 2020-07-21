@@ -4,16 +4,17 @@ CREATE TABLE properties (
     balance INT,
     price INT,
     moveIn DATE,
+    tenants INT,
     description VARCHAR(500),
     PRIMARY KEY (id)
 );
 
--- no clue why auto incrementing is so absurdly verbose in derby
 CREATE TABLE tenants (
     id INT NOT NULL GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1),
     property VARCHAR(10) NOT NULL,
     name VARCHAR(50),
     email VARCHAR(50),
-    phone VARCHAR,
+    phone VARCHAR(50),
+    PRIMARY KEY (id),
     FOREIGN KEY (property) REFERENCES properties(id)
 );
