@@ -11,7 +11,9 @@ CREATE TABLE properties (
 -- no clue why auto incrementing is so absurdly verbose in derby
 CREATE TABLE tenants (
     id INT NOT NULL GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1),
+    property VARCHAR(10) NOT NULL,
     name VARCHAR(50),
     email VARCHAR(50),
-    phone VARCHAR(50)
+    phone VARCHAR,
+    FOREIGN KEY (property) REFERENCES properties(id)
 );
