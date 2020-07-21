@@ -1,18 +1,38 @@
 package com.rentals.rentalmanager.server;
 
-// just to test importing from common
-import com.rentals.rentalmanager.common.RentalProperty;
-
 import java.io.IOException;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.FileHandler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class Server {
+    private static final Logger LOGGER = Logger.getLogger(Server.class.getName());
+
     public static void main(String[] args) {
+        initializeLogging();
+
         // TODO important! port number should be configurable (by command line args perhaps)
-        ServerStart server = new ServerStart(1234);
+        int port = 1234;
+        ServerStart server = new ServerStart(port);
         try {
+            LOGGER.info("Starting server on port " + port + ".");
             server.run();
         } catch (IOException e) {
-            System.err.println("Port is already being used by another application.");
+            LOGGER.severe("Could not start server, port is already being used by another application.");
+        }
+    }
+
+    // registers a file handler to the main logger
+    private static void initializeLogging() {
+        Logger log = Logger.getLogger("com.rentals.rentalmanager.server");
+        try {
+            // true is for appending to an existing file instead of erasing
+            FileHandler fh = new FileHandler("rentalmanager.log", true);
+            fh.setLevel(Level.ALL);
+            log.addHandler(fh);
+        } catch (IOException e) {
+            LOGGER.warning("Log file could not be opened. Information will only be printed to console.");
         }
     }
 }

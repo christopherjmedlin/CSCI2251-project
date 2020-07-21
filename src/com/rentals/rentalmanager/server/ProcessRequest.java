@@ -6,11 +6,14 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.logging.Logger;
 
 /**
  * The ProcessRequest task reads a request from a socket, processes it, and returns an appropriate response
  */
 public class ProcessRequest implements Runnable {
+    private static final Logger LOGGER = Logger.getLogger(ProcessRequest.class.getName());
+
     Socket sock;
     ObjectInputStream in;
     ObjectOutputStream out;
@@ -26,11 +29,8 @@ public class ProcessRequest implements Runnable {
         try {
             getInputAndOutputStreams();
             RequestType type = (RequestType) in.readObject();
-        } catch (IOException e) {
-            // TODO do better logging here
-            e.printStackTrace();
-        } catch (ClassNotFoundException e) {
-            // TODO send an appropriate error to the client
+        } catch (IOException | ClassNotFoundException e) {
+            LOGGER.severe(e.toString());
         }
     }
 

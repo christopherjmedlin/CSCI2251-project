@@ -5,8 +5,11 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.logging.Logger;
 
 public class ServerStart {
+    private static final Logger LOGGER = Logger.getLogger(ServerStart.class.getName());
+
     int port;
     ServerSocket serverSock;
     ExecutorService exec;
@@ -20,6 +23,7 @@ public class ServerStart {
         this.serverSock = new ServerSocket(this.port);
         while (true) {
             Socket sock = serverSock.accept();
+            LOGGER.info("Connection accepted from " + sock.getRemoteSocketAddress().toString() + ".");
             exec.execute(new ProcessRequest(sock));
         }
     }
