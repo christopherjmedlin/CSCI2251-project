@@ -5,8 +5,11 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.logging.Logger;
 
 public class ServerStart {
+    private static final Logger LOGGER = Logger.getLogger(ServerStart.class.getName());
+
     int port;
     ServerSocket serverSock;
     ExecutorService exec;
@@ -16,11 +19,12 @@ public class ServerStart {
         this.exec = Executors.newCachedThreadPool();
     }
 
-    public void run() throws IOException {
+    public void run(String dbUser, String dbPass) throws IOException {
         this.serverSock = new ServerSocket(this.port);
         while (true) {
             Socket sock = serverSock.accept();
-            exec.execute(new ProcessRequest(sock));
+            LOGGER.info("Connection accepted from " + sock.getRemoteSocketAddress().toString() + ".");
+            exec.execute(new ProcessRequest(sock, dbUser, dbPass));
         }
     }
 
