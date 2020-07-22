@@ -19,12 +19,12 @@ public class ServerStart {
         this.exec = Executors.newCachedThreadPool();
     }
 
-    public void run() throws IOException {
+    public void run(String dbUser, String dbPass) throws IOException {
         this.serverSock = new ServerSocket(this.port);
         while (true) {
             Socket sock = serverSock.accept();
             LOGGER.info("Connection accepted from " + sock.getRemoteSocketAddress().toString() + ".");
-            exec.execute(new ProcessRequest(sock));
+            exec.execute(new ProcessRequest(sock, dbUser, dbPass));
         }
     }
 

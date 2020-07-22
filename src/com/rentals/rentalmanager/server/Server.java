@@ -17,7 +17,8 @@ public class Server {
         ServerStart server = new ServerStart(port);
         try {
             LOGGER.info("Starting server on port " + port + ".");
-            server.run();
+            // TODO define db user and password from cmd args!!!!!
+            server.run("testing", "testing");
         } catch (IOException e) {
             LOGGER.severe("Could not start server, port is already being used by another application.");
         }

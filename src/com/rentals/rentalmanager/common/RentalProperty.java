@@ -1,10 +1,11 @@
 package com.rentals.rentalmanager.common;
 
+import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.Period;
 import java.util.Arrays;
 
-public abstract class RentalProperty {
+public abstract class RentalProperty implements Serializable {
     private double balance;
     private double price;
     private String id;
