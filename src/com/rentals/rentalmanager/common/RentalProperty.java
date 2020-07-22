@@ -2,6 +2,7 @@ package com.rentals.rentalmanager.common;
 
 import java.time.LocalDate;
 import java.time.Period;
+import java.util.Arrays;
 
 public abstract class RentalProperty {
     private double balance;
@@ -9,6 +10,7 @@ public abstract class RentalProperty {
     private String id;
     private String description;
     private LocalDate moveIn;
+    private Tenant[] tenants;
 
     public RentalProperty(double balance, double price, String id, String description, LocalDate moveIn) {
         this.balance = balance;
@@ -72,13 +74,17 @@ public abstract class RentalProperty {
         return description;
     }
 
-    public LocalDate getMoveIn() {
-        return moveIn;
+    public Tenant[] getTenants() {
+        return tenants;
     }
+
+    public void setTenants(Tenant[] tenants) {
+        this.tenants = tenants;
+    }
+
 
     @Override
     public String toString() {
-        return String.format("%s %s %s %s %s", getBalance(), getPrice(), getId(), getDescription(),
-                getMoveIn());
+        return String.format("%s %s %s %s %s", getBalance(), getPrice(), getId(), getDescription(), tenants);
     }
 }
