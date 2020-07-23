@@ -20,7 +20,7 @@ public class PropertyQueries {
     private static final String URL = "jdbc:derby:properties";
 
     private Connection db;
-    private PreparedStatement allProperties;
+    private PreparedStatement allPropertyIds;
     private PreparedStatement propertyById;
     private PreparedStatement newProperty;
     private PreparedStatement updateProperty;
@@ -30,8 +30,8 @@ public class PropertyQueries {
             this.db = DriverManager.getConnection(URL, username, password);
 
             // returns every property in the db
-            this.allProperties = this.db.prepareStatement(
-                    "SELECT * FROM properties ORDER BY id"
+            this.allPropertyIds = this.db.prepareStatement(
+                    "SELECT id FROM properties ORDER BY id"
             );
 
             this.propertyById = this.db.prepareStatement(
@@ -55,13 +55,16 @@ public class PropertyQueries {
         }
     }
 
-    public List<RentalProperty> getAllProperties() {
-        List<RentalProperty> properties = new ArrayList<>();
+    /**
+     * @return a list of every property id in the database
+     */
+    public List<String> getAllPropertyIds() {
+        List<String> properties = new ArrayList<>();
 
         LOGGER.info("Querying all properties.");
-        try (ResultSet results = this.allProperties.executeQuery()) {
+        try (ResultSet results = this.allPropertyIds.executeQuery()) {
             while (results.next()) {
-                properties.add(getPropertyFromResultSet(results));
+                properties.add(results.getString("id"));
             }
             return properties;
         } catch (SQLException e) {
@@ -79,6 +82,7 @@ public class PropertyQueries {
         }
 
         try (ResultSet results = this.propertyById.executeQuery()) {
+            // returns null after try clause if no property is found (if !results.next())
             if (results.next()) return getPropertyFromResultSet(results);
         } catch (SQLException e) {
             LOGGER.severe(e.toString());

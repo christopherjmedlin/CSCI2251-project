@@ -30,11 +30,11 @@ public class DBTest {
     }
 
     private static void testGetAllProperties(PropertyQueries queries) {
-        List<RentalProperty> properties = queries.getAllProperties();
+        List<String> properties = queries.getAllPropertyIds();
         assert properties.size() == 3;
-        assert properties.get(0) instanceof Apartment;
-        assert properties.get(1) instanceof SingleHouse;
-        assert properties.get(2) instanceof VacationRental;
+        assert properties.get(0).equals("AABQ12-321");
+        assert properties.get(1).equals("SABQ452");
+        assert properties.get(2).equals("VABQ123");
         Logger.getLogger("testing").info("testGetAllProperties passed.");
     }
 
