@@ -22,7 +22,8 @@ public class ServerTest {
 
     public static void main(String[] args) throws IOException, ClassNotFoundException {
         testNew();
-        //testGet();
+        testNewAlreadyExists();
+        testGet();
     }
 
     private static void connect() throws IOException {
@@ -52,7 +53,16 @@ public class ServerTest {
         out.writeObject("VABQ555");
         // just to wait for completion
         in.readBoolean();
+        close();
+    }
 
+    private static void testNewAlreadyExists() throws IOException, ClassNotFoundException {
+        connect();
+        out.writeObject(RequestType.NEW);
+        out.writeObject("VABQ555");
+        assert !in.readBoolean();
+        String message = (String) in.readObject();
+        assert message.equals("ID already exists.");
         close();
     }
 
@@ -62,7 +72,7 @@ public class ServerTest {
         out.writeObject("VABQ555");
         assert in.readBoolean();
         RentalProperty property = (RentalProperty) in.readObject();
-        assert property.getId() == "VABQ555";
+        assert property.getId().equals("VABQ555");
         assert property instanceof VacationRental;
         close();
     }

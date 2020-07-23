@@ -89,11 +89,13 @@ public class PropertyQueries {
     }
 
     // TODO the move in date should probably by default be the current date.
-    public int newProperty(String id) {
+    public int newProperty(String id) throws IllegalArgumentException {
         LOGGER.info("Adding new property to database with id " + id + ".");
         try {
             newProperty.setString(1, id);
             return newProperty.executeUpdate();
+        } catch (SQLIntegrityConstraintViolationException e) {
+            throw new IllegalArgumentException("ID already exists.");
         } catch (SQLException e) {
             LOGGER.severe(e.toString());
         }

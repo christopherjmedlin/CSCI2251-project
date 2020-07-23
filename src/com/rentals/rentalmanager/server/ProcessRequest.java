@@ -63,8 +63,7 @@ public class ProcessRequest implements Runnable {
             this.out.flush();
         } catch (ClassNotFoundException e) {
             try {
-                out.writeBoolean(false);
-                out.writeObject("Could not determine class of object sent");
+                sendError("Could not determine class of object sent");
             } catch (IOException ioe) {
                 LOGGER.severe(ioe.toString());
             }
@@ -74,8 +73,6 @@ public class ProcessRequest implements Runnable {
 
     // handles a get request from the user for a property
     private void getRequest(PropertyQueries db) throws ClassNotFoundException {
-        // TODO it is extremely important that this operation returns an appropriate error message if ID already exists
-        // this can be done by allowing SQLIntegrity exceptions to be thrown (or whatever they're called)
         LOGGER.info("Processing a GET request for a property.");
         try {
             String id = (String) in.readObject();
@@ -90,10 +87,21 @@ public class ProcessRequest implements Runnable {
         LOGGER.info("Processing a NEW property request.");
         try {
             String id = (String) in.readObject();
-            db.newProperty(id);
-            out.writeBoolean(true);
+            try {
+                db.newProperty(id);
+                out.writeBoolean(true);
+            } catch (IllegalArgumentException e) {
+                // this is if the ID already existed in the database
+                LOGGER.info("ID already exists.");
+                sendError(e.getMessage());
+            }
         } catch (IOException e) {
             LOGGER.severe(e.toString());
         }
+    }
+
+    private void sendError(String message) throws IOException {
+        out.writeBoolean(false);
+        out.writeObject(message);
     }
 }
