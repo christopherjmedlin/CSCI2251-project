@@ -43,7 +43,7 @@ public class PropertyQueries {
             // updates every field in a property, with the last argument being the id of it
             this.updateProperty = this.db.prepareStatement(
                     "UPDATE properties " +
-                    "SET balance=?, price=?, moveIn=?, description=? " +
+                    "SET balance=?, price=?, moveIn=?, description=?, hasTenants=?" +
                     "WHERE id=?"
             );
 
@@ -93,6 +93,8 @@ public class PropertyQueries {
     }
 
     public List<String> search(PropertySearch s) {
+        // TODO filter by rental status!!!!!!!!!!
+        LOGGER.info("Performing search request.");
         PreparedStatement statement = null;
         List<String> properties = new ArrayList<>();
 
@@ -118,7 +120,26 @@ public class PropertyQueries {
         return properties;
     }
 
-    // TODO the move in date should probably by default be the current date.
+    public int updateProperty(RentalProperty property) {
+        LOGGER.info("Updating property with id " + property.getId() + ".");
+        try {
+            // set parameters of the prepared statement to the values of the RentalProperty object
+            updateProperty.setDouble(1, property.getBalance());
+            updateProperty.setDouble(2, property.getPrice());
+            updateProperty.setDate(3, Date.valueOf(property.getMoveInDate()));
+            updateProperty.setString(4, property.getDescription());
+            //TODO once the tenant-related code is complete, this should be set to 1 if there are tenants and 0 if not. this must be done!!!
+            updateProperty.setInt(5, 0);
+            updateProperty.setString(6, property.getId());
+
+            return updateProperty.executeUpdate();
+        } catch (SQLException e) {
+            LOGGER.severe(e.toString());
+        }
+
+        return 0;
+    }
+
     public int newProperty(String id) throws IllegalArgumentException {
         LOGGER.info("Adding new property to database with id " + id + ".");
         try {
@@ -126,6 +147,7 @@ public class PropertyQueries {
             newProperty.setDate(2, Date.valueOf(LocalDate.now()));
             return newProperty.executeUpdate();
         } catch (SQLIntegrityConstraintViolationException e) {
+            // throw this so the calling method can send an error to the client
             throw new IllegalArgumentException("ID already exists.");
         } catch (SQLException e) {
             LOGGER.severe(e.toString());
