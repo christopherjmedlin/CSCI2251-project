@@ -1,9 +1,6 @@
 package com.rentals.rentalmanager.server.db;
 
-import com.rentals.rentalmanager.common.Apartment;
-import com.rentals.rentalmanager.common.RentalProperty;
-import com.rentals.rentalmanager.common.SingleHouse;
-import com.rentals.rentalmanager.common.VacationRental;
+import com.rentals.rentalmanager.common.*;
 
 import java.sql.*;
 import java.time.LocalDate;
@@ -22,6 +19,7 @@ public class PropertyQueries {
     private PreparedStatement propertyById;
     private PreparedStatement newProperty;
     private PreparedStatement updateProperty;
+    private PreparedStatement propertiesByVacancyAndString;
 
     public PropertyQueries(String username, String password) {
         try {
@@ -36,17 +34,23 @@ public class PropertyQueries {
                     "SELECT * FROM properties WHERE id=?"
             );
 
+            // searches based on whether there are tenants AND checks the description against a string
+            this.propertiesByVacancyAndString = this.db.prepareStatement(
+                    "SELECT id FROM properties " +
+                     "WHERE hasTenants=? AND description LIKE ?"
+            );
+
             // updates every field in a property, with the last argument being the id of it
             this.updateProperty = this.db.prepareStatement(
                     "UPDATE properties " +
-                       "SET balance=?, price=?, moveIn=?, description=? " +
-                       "WHERE id=?"
+                    "SET balance=?, price=?, moveIn=?, description=? " +
+                    "WHERE id=?"
             );
 
             // create new property with user-defined id, with everything else empty
             this.newProperty = this.db.prepareStatement(
                     "INSERT INTO properties " +
-                       "(id) VALUES (?)"
+                       "(id, moveIn) VALUES (?, ?)"
             );
         } catch (SQLException e) {
             LOGGER.severe(e.toString());
@@ -88,11 +92,38 @@ public class PropertyQueries {
         return null;
     }
 
+    public List<String> search(PropertySearch s) {
+        PreparedStatement statement = null;
+        List<String> properties = new ArrayList<>();
+
+        // attempt to just search for a specific property by ID
+        RentalProperty property = getPropertyById(s.search);
+        if (property != null)
+            properties.add(property.getId());
+
+        try {
+            this.propertiesByVacancyAndString.setInt(1, s.hasTenants ? 1 : 0);
+            this.propertiesByVacancyAndString.setString(2, s.search);
+        } catch (SQLException e) {
+            LOGGER.severe(e.toString());
+        }
+
+        try (ResultSet results = this.propertiesByVacancyAndString.executeQuery()) {
+            while (results.next()) {
+                properties.add(results.getString("id"));
+            }
+        } catch (SQLException e) {
+            LOGGER.severe(e.toString());
+        }
+        return properties;
+    }
+
     // TODO the move in date should probably by default be the current date.
     public int newProperty(String id) throws IllegalArgumentException {
         LOGGER.info("Adding new property to database with id " + id + ".");
         try {
             newProperty.setString(1, id);
+            newProperty.setDate(2, Date.valueOf(LocalDate.now()));
             return newProperty.executeUpdate();
         } catch (SQLIntegrityConstraintViolationException e) {
             throw new IllegalArgumentException("ID already exists.");
