@@ -17,8 +17,6 @@ import java.util.logging.Logger;
 public class PropertyQueries {
     private static final Logger LOGGER = Logger.getLogger(PropertyQueries.class.getName());
 
-    private static final String URL = "jdbc:derby:properties";
-
     private Connection db;
     private PreparedStatement allPropertyIds;
     private PreparedStatement propertyById;
@@ -27,7 +25,7 @@ public class PropertyQueries {
 
     public PropertyQueries(String username, String password) {
         try {
-            this.db = DriverManager.getConnection(URL, username, password);
+            this.db = DriverManager.getConnection(DatabaseUtilities.URL, username, password);
 
             // returns every property in the db
             this.allPropertyIds = this.db.prepareStatement(
@@ -83,7 +81,7 @@ public class PropertyQueries {
 
         try (ResultSet results = this.propertyById.executeQuery()) {
             // returns null after try clause if no property is found (if !results.next())
-            if (results.next()) return getPropertyFromResultSet(results);
+            if (results.next()) return DatabaseUtilities.getPropertyFromResultSet(results);
         } catch (SQLException e) {
             LOGGER.severe(e.toString());
         }
@@ -110,27 +108,5 @@ public class PropertyQueries {
         } catch (SQLException e) {
             LOGGER.severe(e.toString());
         }
-    }
-
-    private RentalProperty getPropertyFromResultSet(ResultSet results) throws SQLException {
-        String id = results.getString("id");
-        int balance = results.getInt("balance");
-        int price = results.getInt("price");
-        Date moveInTemp = results.getDate("moveIn");
-        // important to not call toLocalDate if the moveIn is null, else we will have null pointer exception
-        LocalDate moveIn = moveInTemp == null ? null : moveInTemp.toLocalDate();
-        String description = results.getString("description");
-
-        // construct different subclasses of RentalProperty based on the first character of the id
-        switch (id.charAt(0)) {
-            case 'A':
-                return new Apartment(balance, price, id, description, moveIn);
-            case 'S':
-                return new SingleHouse(balance, price, id, description, moveIn);
-            case 'V':
-                return new VacationRental(balance, price, id, description, moveIn);
-        }
-
-        return null;
     }
 }
