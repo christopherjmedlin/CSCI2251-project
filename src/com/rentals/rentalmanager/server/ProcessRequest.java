@@ -59,6 +59,8 @@ public class ProcessRequest implements Runnable {
                     newRequest(db);
                     break;
             }
+            // flush the output stream
+            this.out.flush();
         } catch (ClassNotFoundException e) {
             try {
                 out.writeBoolean(false);
