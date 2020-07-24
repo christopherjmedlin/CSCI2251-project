@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.time.LocalDate;
 import java.util.Arrays;
-import java.util.IllegalFormatException;
 import java.util.InputMismatchException;
 import java.util.Scanner;
 
@@ -118,13 +117,13 @@ public class RentalPropertyTest {
           for (int i = 0; i < numTenants; i++) {
               newTenant[i] = new Tenant();
               System.out.println("\nFirst name of tenant: ");
-              newTenant[i].setTenantFirstName(input.next());
+              newTenant[i].setFirstName(input.next());
 
               System.out.println("Last name of tenant: ");
-              newTenant[i].setTenantLastName(input.next());
+              newTenant[i].setLastName(input.next());
 
               System.out.println("Email of tenant: ");
-              newTenant[i].setTenantEmail(input.next());
+              newTenant[i].setEmail(input.next());
 
               properties[propertyNum].setTenants(newTenant);
           }

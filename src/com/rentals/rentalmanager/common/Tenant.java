@@ -2,42 +2,53 @@ package com.rentals.rentalmanager.common;
 
 public class Tenant {
 
-    private String tenantFirstName;
-    private String tenantLastName;
-    private String tenantEmail;
+    private String firstName;
+    private String lastName;
+    private String email;
+    private String phone;
 
+    public Tenant(String firstName, String lastName) {
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.email = "";
+        this.phone = "";
+    }
 
     public Tenant() {
-
+        this("", "");
     }
 
-    public String getTenantFirstName() {
-        return tenantFirstName;
+    public String getFirstName() {
+        return firstName;
     }
 
-    public void setTenantFirstName(String tenantFirstName) {
-        this.tenantFirstName = tenantFirstName;
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
     }
 
-    public String getTenantLastName() {
-        return tenantLastName;
+    public String getLastName() {
+        return lastName;
     }
 
-    public void setTenantLastName(String tenantLastName) {
-        this.tenantLastName = tenantLastName;
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
     }
 
-    public String getTenantEmail() {
-        return tenantEmail;
+    public String getFullName() {
+        return this.firstName + " " + this.lastName;
     }
 
-    public void setTenantEmail(String tenantEmail) {
-        this.tenantEmail = tenantEmail;
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 
     @Override
     public String toString() {
-        return String.format("%s %s %s", getTenantFirstName(), getTenantLastName(), getTenantEmail());
+        return String.format("%s %s %s", getFirstName(), getLastName(), getEmail());
     }
 
 }
