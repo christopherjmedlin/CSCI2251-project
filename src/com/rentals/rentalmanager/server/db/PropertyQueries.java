@@ -27,11 +27,12 @@ public class PropertyQueries {
         try {
             this.db = DriverManager.getConnection(DatabaseUtilities.URL, username, password);
 
-            // returns every property in the db
+            // retrieves every property in the db
             this.allPropertyIds = this.db.prepareStatement(
                     "SELECT id FROM properties ORDER BY id"
             );
 
+            // retrieves a property based on its id
             this.propertyById = this.db.prepareStatement(
                     "SELECT * FROM properties WHERE id=?"
             );

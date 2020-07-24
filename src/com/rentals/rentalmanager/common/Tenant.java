@@ -8,12 +8,16 @@ public class Tenant {
     private String email;
     private String phone;
 
-    public Tenant(int id, String firstName, String lastName) {
+    public Tenant(int id, String firstName, String lastName, String email, String phone) {
         this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;
-        this.email = "";
-        this.phone = "";
+        this.email = email;
+        this.phone = phone;
+    }
+
+    public Tenant(int id, String firstName, String lastName) {
+        this(id, firstName, lastName, "", "");
     }
 
     public Tenant(int id) {

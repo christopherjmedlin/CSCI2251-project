@@ -1,0 +1,98 @@
+package com.rentals.rentalmanager.server.db;
+
+import com.rentals.rentalmanager.common.PropertySearch;
+import com.rentals.rentalmanager.common.RentalProperty;
+import com.rentals.rentalmanager.common.Tenant;
+
+import java.sql.*;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Logger;
+
+import static java.sql.DriverManager.*;
+
+/**
+ * Used for retrieving, updating, and creating RentalProperties in the database
+ */
+public class TenantQueries {
+    private static final Logger LOGGER = Logger.getLogger(TenantQueries.class.getName());
+
+    private Connection db;
+
+    private PreparedStatement updateTenants;
+    private PreparedStatement newTenant;
+    private PreparedStatement tenantsByProperty;
+
+    public TenantQueries(String username, String password) throws SQLException {
+        this(getConnection(DatabaseUtilities.URL, username, password));
+    }
+
+    //TODO add information logging to the methods below
+
+    /**
+     * This constructor exists because this is often used from the PropertyQueries class, where a connection already is
+     * formed
+     */
+    public TenantQueries(Connection db) {
+        this.db = db;
+        try {
+            // creates a new tenant
+            this.newTenant = db.prepareStatement(
+                    "INSERT INTO tenants (property, name) VALUES (?, ?)"
+            );
+
+            // gets every tenant associated with a property
+            this.tenantsByProperty = db.prepareStatement(
+                    "SELECT * FROM tenants WHERE property=?"
+            );
+
+            // updates a specific tenant
+            this.updateTenants = db.prepareStatement(
+                    "UPDATE tenants " +
+                     "SET name=?, email=?, phone=? WHERE id=?"
+            );
+        } catch (SQLException e) {
+            LOGGER.severe(e.toString());
+        }
+    }
+
+    public int newTenant(String property, String name) {
+        try {
+            this.newTenant.setString(1, property);
+            this.newTenant.setString(2, name);
+            return this.newTenant.executeUpdate();
+        } catch (SQLException e) {
+            LOGGER.severe(e.toString());
+        }
+
+        return 0;
+    }
+
+    /**
+     * Using the addTenant method, this method will retrieve every tenant associated with the given property from the
+     * database and add them to it.
+     */
+    public void getTenantsForProperty(RentalProperty property) {
+        try {
+            this.tenantsByProperty.setString(1, property.getId());
+        } catch (SQLException e) {
+            LOGGER.severe(e.toString());
+        }
+
+        try(ResultSet results = this.tenantsByProperty.executeQuery()) {
+            while(results.next()) {
+                String fullName = results.getString("name");
+                String[] split = fullName.split(" ");
+                property.addTenant(new Tenant(
+                        results.getInt("id"),
+                        split[0], split[1],
+                        results.getString("email"),
+                        results.getString("phone")
+                ));
+            }
+        } catch (SQLException e) {
+            LOGGER.severe(e.toString());
+        }
+    }
+}

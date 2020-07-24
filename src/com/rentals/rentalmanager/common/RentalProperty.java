@@ -22,6 +22,8 @@ public abstract class RentalProperty implements Serializable {
         this.id = id;
         this.description = description;
         this.moveIn = moveIn;
+
+        this.tenants = new HashMap<>();
     }
 
     /**
@@ -104,7 +106,7 @@ public abstract class RentalProperty implements Serializable {
      * Returns the name of each tenant associated with this property.
      */
     public String[] getTenantNames() {
-        return (String[]) this.tenants.keySet().toArray();
+        return this.tenants.keySet().toArray(new String[tenants.size()]);
     }
 
     @Override
