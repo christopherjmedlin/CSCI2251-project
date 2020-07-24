@@ -59,7 +59,7 @@ public class DBTest {
         assert updatedProperty.getBalance() == 100.00;
         assert updatedProperty.getPrice() == 2000.00;
         assert updatedProperty.getDescription().equals("it's a house");
-        assert updatedProperty.getMoveIn().getDayOfMonth() == 3;
+        assert updatedProperty.getMoveInDate().getDayOfMonth() == 3;
         LOGGER.info("testUpdateProperty passed.");
     }
 

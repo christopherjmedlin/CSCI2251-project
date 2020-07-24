@@ -2,20 +2,26 @@ package com.rentals.rentalmanager.common;
 
 public class Tenant {
 
+    private int id;
     private String firstName;
     private String lastName;
     private String email;
     private String phone;
 
-    public Tenant(String firstName, String lastName) {
+    public Tenant(int id, String firstName, String lastName) {
+        this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = "";
         this.phone = "";
     }
 
-    public Tenant() {
-        this("", "");
+    public Tenant(int id) {
+        this(id, "", "");
+    }
+
+    public int getId() {
+        return this.id;
     }
 
     public String getFirstName() {

@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.Period;
 import java.util.Arrays;
+import java.util.HashMap;
 
 public abstract class RentalProperty implements Serializable {
     private double balance;
@@ -11,7 +12,9 @@ public abstract class RentalProperty implements Serializable {
     private String id;
     private String description;
     private LocalDate moveIn;
-    private Tenant[] tenants;
+    // since tenants are displayed as a list of their names in the client, it seems reasonable to store them in a
+    // hashmap with the keys being their full names, appending an id if the name already exists in the hashmap.
+    private HashMap<String, Tenant> tenants;
 
     public RentalProperty(double balance, double price, String id, String description, LocalDate moveIn) {
         this.balance = balance;
@@ -75,14 +78,34 @@ public abstract class RentalProperty implements Serializable {
         return description;
     }
 
-    public Tenant[] getTenants() {
-        return tenants;
+    /**
+     * Associates a new tenant with the property.
+     */
+    public void addTenant(Tenant tenant) {
+        String name = tenant.getFullName();
+        if (!this.tenants.containsKey(name))
+            this.tenants.put(name, tenant);
+        // if the key is already in the map, append the id to ensure uniqueness
+        // for example, if "Bob" is already associated with this property, and a tenant with the same name is added to
+        // the property, that tenant will appear as "Bob#423", 423 being his id.
+        else
+            this.tenants.put(name + "#" + tenant.getId(), tenant);
     }
 
-    public void setTenants(Tenant[] tenants) {
-        this.tenants = tenants;
+    /**
+     * Retrieves the tenant associated with this property with the given id. Since it is a reference being returned,
+     * tenants can be updated with this method.
+     */
+    public Tenant getTenant(String name) {
+        return this.tenants.get(name);
     }
 
+    /**
+     * Returns the name of each tenant associated with this property.
+     */
+    public String[] getTenantNames() {
+        return (String[]) this.tenants.keySet().toArray();
+    }
 
     @Override
     public String toString() {
