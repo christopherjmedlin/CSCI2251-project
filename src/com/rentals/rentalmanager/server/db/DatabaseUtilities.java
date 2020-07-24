@@ -9,10 +9,29 @@ import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 public class DatabaseUtilities {
     public static final String URL = "jdbc:derby:properties";
 
+    /**
+     * Returns the ids of every property in the given list whose payment status matches the one given.
+     */
+    public static List<String> filterByRentalStatus(List<RentalProperty> properties, int rentalStatus) {
+        int i = 0;
+        List<String> ids = new ArrayList<>();
+        for (RentalProperty p : properties) {
+            if (p.paymentStatus() == rentalStatus)
+                ids.add(p.getId());
+        }
+        return ids;
+    }
+
+    /**
+     * If the result set given contains a property, this will transfer the data from its columns into a RentalProperty
+     * object with the appropriate subclass based on the first character of its ID, and then return that.
+     */
     public static RentalProperty getPropertyFromResultSet(ResultSet results) throws SQLException {
         String id = results.getString("id");
         int balance = results.getInt("balance");

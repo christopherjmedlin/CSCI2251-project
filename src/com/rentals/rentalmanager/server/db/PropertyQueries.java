@@ -1,7 +1,9 @@
 package com.rentals.rentalmanager.server.db;
 
 import com.rentals.rentalmanager.common.*;
+import org.apache.derby.iapi.db.Database;
 
+import javax.xml.crypto.Data;
 import java.sql.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -36,7 +38,7 @@ public class PropertyQueries {
 
             // searches based on whether there are tenants AND checks the description against a string
             this.propertiesByVacancyAndString = this.db.prepareStatement(
-                    "SELECT id FROM properties " +
+                    "SELECT * FROM properties " +
                      "WHERE hasTenants=? AND description LIKE ?"
             );
 
@@ -92,19 +94,28 @@ public class PropertyQueries {
         return null;
     }
 
+    /**
+     * Performs a search based on the information in the PropertySearch instance and returns a list of ids satisfying
+     * it.
+     */
     public List<String> search(PropertySearch s) {
-        // TODO filter by rental status!!!!!!!!!!
         LOGGER.info("Performing search request.");
         PreparedStatement statement = null;
-        List<String> properties = new ArrayList<>();
+        List<RentalProperty> properties = new ArrayList<>();
 
         // attempt to just search for a specific property by ID
         RentalProperty property = getPropertyById(s.search);
-        if (property != null)
-            properties.add(property.getId());
+        if (property != null) {
+            List<String> ids = new ArrayList<>();
+            // return a string list containing just the one id of the retrieved property.
+            ids.add(property.getId());
+            return ids;
+        }
 
         try {
+            // set first parameter, hasTenants
             this.propertiesByVacancyAndString.setInt(1, s.hasTenants ? 1 : 0);
+            // set second parameter, the description search
             this.propertiesByVacancyAndString.setString(2, s.search);
         } catch (SQLException e) {
             LOGGER.severe(e.toString());
@@ -112,15 +123,21 @@ public class PropertyQueries {
 
         try (ResultSet results = this.propertiesByVacancyAndString.executeQuery()) {
             while (results.next()) {
-                properties.add(results.getString("id"));
+                properties.add(DatabaseUtilities.getPropertyFromResultSet(results));
             }
         } catch (SQLException e) {
             LOGGER.severe(e.toString());
         }
-        return properties;
+
+        // gets the ids of those properties satisfying the rental status requirement
+        return DatabaseUtilities.filterByRentalStatus(properties, s.rentalStatus);
     }
 
+    /**
+     * Ensures the property in the database has columns identical to the fields of the RentalProperty object
+     */
     public int updateProperty(RentalProperty property) {
+        // TODO eventually, this is supposed to also update every tenant that the object contains.
         LOGGER.info("Updating property with id " + property.getId() + ".");
         try {
             // set parameters of the prepared statement to the values of the RentalProperty object
