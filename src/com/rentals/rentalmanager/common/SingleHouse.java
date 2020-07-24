@@ -24,7 +24,6 @@ public class SingleHouse extends RentalProperty {
 
         // if it has at least been a year
         if (duration.getYears() >= 1) {
-            dueDates += 1;
             // subtract that year from the period
             duration = duration.minusYears(1);
         }
@@ -36,7 +35,7 @@ public class SingleHouse extends RentalProperty {
 
     @Override
     protected boolean dueDateApproaching() {
-        // assuming that rent is due at the beginning of each month,
+        // assuming that renYt is due at the beginning of each month,
         // when there is 7 or less days remaining until rent, return true
 
         //get current day of month and initialize int

@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.time.LocalDate;
 import java.util.Arrays;
+import java.util.IllegalFormatException;
+import java.util.InputMismatchException;
 import java.util.Scanner;
 
 public class RentalPropertyTest {
@@ -14,18 +16,26 @@ public class RentalPropertyTest {
 
     public static void main(String[] args) throws FileNotFoundException {
 
+
+        // collect name of file/dB
         path = args[0];
 
+        //total amount of properties
         int propertyIndex = numberOfProperties();
-        System.out.println(propertyIndex);
 
+        //each row of file to row of string array
         rows = fileToArray(propertyIndex);
 
+        //create properties
         properties = newRental(propertyIndex, rows, currentDate);
-        //System.out.println(Arrays.deepToString(properties));
         printProperties();
 
+        //add a tenant(s) to a property
+        addTenant(properties);
+        printTenants();
+
     }
+
 
     //iterate through rows of file, return number of properties
     private static int numberOfProperties() throws FileNotFoundException {
@@ -56,7 +66,6 @@ public class RentalPropertyTest {
             }
 
         }
-        System.out.println(Arrays.deepToString(someRows));
         return someRows;
     }
 
@@ -79,7 +88,7 @@ public class RentalPropertyTest {
     }
 
     // iterates through properties, prints appropriate type
-    public static void printProperties() {
+    private static void printProperties() {
         for(RentalProperty currentRental : properties) {
             if(currentRental instanceof SingleHouse) {
                 System.out.println(currentRental);
@@ -89,4 +98,60 @@ public class RentalPropertyTest {
                 System.out.println(currentRental);
         }
     }
+
+
+    // adds tenant(s) to an array and assign to a property
+    private static void addTenant(RentalProperty[] properties) throws InputMismatchException {
+      Scanner input = new Scanner(System.in);
+      int cont = 1;
+
+      while (cont == 1) {
+
+          System.out.print("Property Index: ");
+          int propertyNum = input.nextInt();
+
+          System.out.print("\nHow many tenants? ");
+          int numTenants = input.nextInt();
+          Tenant[] newTenant = new Tenant[numTenants];
+
+
+          for (int i = 0; i < numTenants; i++) {
+              newTenant[i] = new Tenant();
+              System.out.println("\nFirst name of tenant: ");
+              newTenant[i].setTenantFirstName(input.next());
+
+              System.out.println("Last name of tenant: ");
+              newTenant[i].setTenantLastName(input.next());
+
+              System.out.println("Email of tenant: ");
+              newTenant[i].setTenantEmail(input.next());
+
+              properties[propertyNum].setTenants(newTenant);
+          }
+
+          System.out.println("Add tenants to another property? '1' or '0'");
+
+          cont = input.nextInt();
+          if (cont == 0) {
+              break;
+          }
+          else if (cont == 1) {
+              continue;
+          }
+      }
+    }
+
+    // prints array of tenants of each property
+    private static void printTenants() throws FileNotFoundException {
+
+        for(int i = 0; i < numberOfProperties(); i++) {
+            System.out.print("Tenants of property #" + (i + 1) + " ");
+            System.out.println(Arrays.deepToString(properties[i].getTenants()));
+        }
+
+
+    }
+
 }
+
+

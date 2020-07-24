@@ -8,13 +8,13 @@ public class VacationRental extends RentalProperty {
         super(balance, price, id, description, moveIn);
     }
 
-    @Override
-    protected int dueDatesSinceMoveIn() {
-        return 0;
-    }
+        @Override
+        protected int dueDatesSinceMoveIn() {
+            return 0;
+        }
 
-    @Override
-    protected boolean dueDateApproaching() {
-        return false;
-    }
+        @Override
+        protected boolean dueDateApproaching() {
+            return false;
+        }
 }
