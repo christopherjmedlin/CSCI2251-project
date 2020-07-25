@@ -2,6 +2,7 @@ package com.rentals.rentalmanager.tests;
 
 import com.rentals.rentalmanager.common.RentalProperty;
 import com.rentals.rentalmanager.common.RequestType;
+import com.rentals.rentalmanager.common.Tenant;
 import com.rentals.rentalmanager.common.VacationRental;
 
 import java.io.IOException;
@@ -9,6 +10,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.time.LocalDate;
 import java.util.logging.Logger;
 
 /**
@@ -24,6 +26,7 @@ public class ServerTest {
         testNew();
         testNewAlreadyExists();
         testGet();
+        testUpdate();
     }
 
     private static void connect() throws IOException {
@@ -75,5 +78,26 @@ public class ServerTest {
         assert property.getId().equals("VABQ555");
         assert property instanceof VacationRental;
         close();
+    }
+
+    private static void testUpdate() throws IOException, ClassNotFoundException {
+        connect();
+        RentalProperty update = new VacationRental(100.00, 100.00, "VABQ555",
+                "vacation rental", LocalDate.now());
+        out.writeObject(RequestType.UPDATE);
+        out.writeObject(update);
+        assert in.readBoolean();
+        close();
+
+        connect();
+        out.writeObject(RequestType.GET);
+        out.writeObject("VABQ555");
+        assert in.readBoolean();
+        RentalProperty property = (RentalProperty) in.readObject();
+        close();
+
+        assert property.getBalance() == 100.00;
+        assert property.getPrice() == 100.00;
+        assert property.getDescription().equals("vacation rental");
     }
 }

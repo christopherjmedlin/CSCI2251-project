@@ -22,6 +22,7 @@ public class PropertyQueries {
     private PreparedStatement newProperty;
     private PreparedStatement updateProperty;
     private PreparedStatement propertiesByVacancyAndString;
+    private PreparedStatement deleteProperty;
 
     public PropertyQueries(String username, String password) {
         try {
@@ -54,6 +55,11 @@ public class PropertyQueries {
             this.newProperty = this.db.prepareStatement(
                     "INSERT INTO properties " +
                        "(id, moveIn) VALUES (?, ?)"
+            );
+
+            this.deleteProperty = this.db.prepareStatement(
+                    "DELETE FROM properties " +
+                    "WHERE id=?"
             );
         } catch (SQLException e) {
             LOGGER.severe(e.toString());
@@ -177,6 +183,20 @@ public class PropertyQueries {
         } catch (SQLIntegrityConstraintViolationException e) {
             // throw this so the calling method can send an error to the client
             throw new IllegalArgumentException("ID already exists.");
+        } catch (SQLException e) {
+            LOGGER.severe(e.toString());
+        }
+
+        return 0;
+    }
+
+    public int deleteProperty(String id) {
+        LOGGER.info("Deleting property from database with id " + id + ".");
+        try {
+            // delete every tenant associated with this property
+            new TenantQueries(this.db).deleteTenantsByProperty(id);
+            deleteProperty.setString(1, id);
+            return deleteProperty.executeUpdate();
         } catch (SQLException e) {
             LOGGER.severe(e.toString());
         }

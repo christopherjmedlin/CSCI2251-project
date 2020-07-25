@@ -138,7 +138,22 @@ public class ProcessRequest implements Runnable {
             // indicate success
             out.writeBoolean(true);
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.severe(e.toString());
+        }
+    }
+
+    // handles a request to delete a property
+    private void deleteRequest(PropertyQueries db) throws ClassNotFoundException {
+        LOGGER.info("Processing a DELETE request.");
+        try {
+            // read ID
+            String propertyId = (String) in.readObject();
+            // delete
+            db.deleteProperty(propertyId);
+            // success
+            out.writeBoolean(true);
+        } catch (IOException e) {
+            LOGGER.severe(e.toString());
         }
     }
 

@@ -24,6 +24,7 @@ public class DBTest {
         testGetPropertyById(queries);
         testUpdateProperty(queries);
         testSearch(queries);
+        testDelete(queries);
         queries.close();
         TenantQueries queries2 = new TenantQueries(args[0], args[1]);
         testNewTenant(queries2);
@@ -34,9 +35,9 @@ public class DBTest {
     // integrity. these can be ignored.
     private static void testNewProperty(PropertyQueries queries) {
         try {
+            queries.newProperty("SABQ452");
             queries.newProperty("VABQ123");
             queries.newProperty("AABQ12-321");
-            queries.newProperty("SABQ452");
         } catch (IllegalArgumentException ignored) {
             LOGGER.info("test properties already made");
         }
@@ -82,13 +83,19 @@ public class DBTest {
         LOGGER.info("testSearch passed.");
     }
 
+    private static void testDelete(PropertyQueries queries) {
+        queries.deleteProperty("SABQ452");
+        assert queries.getPropertyById("SABQ452") == null;
+        LOGGER.info("testDelete passed.");
+    }
+
     private static void testNewTenant(TenantQueries queries) {
         try {
             queries.newTenant("AABQ12-321", "John Doe");
             queries.newTenant("AABQ12-321", "Don Joe");
             queries.newTenant("VABQ123", "Jane Doe");
         } catch (IllegalArgumentException ignored) {
-            LOGGER.info("test properties already made");
+            LOGGER.info("test tenants already made");
         }
         LOGGER.info("testNewTenant passed.");
     }

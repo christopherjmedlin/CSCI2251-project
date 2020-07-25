@@ -23,6 +23,8 @@ public class TenantQueries {
     private PreparedStatement updateTenant;
     private PreparedStatement newTenant;
     private PreparedStatement tenantsByProperty;
+    private PreparedStatement deleteTenant;
+    private PreparedStatement deleteTenantsByProperty;
 
     public TenantQueries(String username, String password) throws SQLException {
         this(getConnection(DatabaseUtilities.URL, username, password));
@@ -51,6 +53,16 @@ public class TenantQueries {
             this.updateTenant = db.prepareStatement(
                     "UPDATE tenants " +
                      "SET name=?, email=?, phone=? WHERE id=?"
+            );
+
+            this.deleteTenant = this.db.prepareStatement(
+                    "DELETE FROM tenants " +
+                            "WHERE id=?"
+            );
+
+            this.deleteTenantsByProperty = this.db.prepareStatement(
+                    "DELETE FROM tenants " +
+                     "WHERE property=?"
             );
         } catch (SQLException e) {
             LOGGER.severe(e.toString());
@@ -107,6 +119,30 @@ public class TenantQueries {
             this.updateTenant.setInt(4, t.getId());
 
             return this.updateTenant.executeUpdate();
+        } catch (SQLException e) {
+            LOGGER.severe(e.toString());
+        }
+
+        return 0;
+    }
+
+    public int deleteTenant(int id) {
+        LOGGER.info("Deleting tenant from database with id " + id + ".");
+        try {
+            deleteTenant.setInt(1, id);
+            return deleteTenant.executeUpdate();
+        } catch (SQLException e) {
+            LOGGER.severe(e.toString());
+        }
+
+        return 0;
+    }
+
+    public int deleteTenantsByProperty(String propertyId) {
+        LOGGER.info("Deleting tenants in database with property id " + propertyId + ".");
+        try {
+            deleteTenantsByProperty.setString(1, propertyId);
+            return deleteTenantsByProperty.executeUpdate();
         } catch (SQLException e) {
             LOGGER.severe(e.toString());
         }
