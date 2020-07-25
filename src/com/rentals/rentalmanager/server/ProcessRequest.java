@@ -1,12 +1,16 @@
 package com.rentals.rentalmanager.server;
 
+import com.rentals.rentalmanager.common.PropertySearch;
+import com.rentals.rentalmanager.common.RentalProperty;
 import com.rentals.rentalmanager.common.RequestType;
 import com.rentals.rentalmanager.server.db.PropertyQueries;
+import org.apache.derby.iapi.reference.Property;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.List;
 import java.util.logging.Logger;
 
 /**
@@ -58,6 +62,12 @@ public class ProcessRequest implements Runnable {
                 case NEW:
                     newRequest(db);
                     break;
+                case SEARCH:
+                    searchRequest(db);
+                    break;
+                case UPDATE:
+                    updateRequest(db);
+                    break;
             }
             // flush the output stream
             this.out.flush();
@@ -83,6 +93,7 @@ public class ProcessRequest implements Runnable {
         }
     }
 
+    // handles a request from the user to create a new property
     private void newRequest(PropertyQueries db) throws ClassNotFoundException {
         LOGGER.info("Processing a NEW property request.");
         try {
@@ -91,12 +102,43 @@ public class ProcessRequest implements Runnable {
                 db.newProperty(id);
                 out.writeBoolean(true);
             } catch (IllegalArgumentException e) {
-                // this is if the ID already existed in the database
+                // this is ran if the ID already existed in the database
                 LOGGER.info("ID already exists.");
                 sendError(e.getMessage());
             }
         } catch (IOException e) {
             LOGGER.severe(e.toString());
+        }
+    }
+
+    // handles a search request from the user
+    private void searchRequest(PropertyQueries db) throws ClassNotFoundException {
+        LOGGER.info("Processing a SEARCH request.");
+        try {
+            // read search parameters
+            PropertySearch searchParameters = (PropertySearch) in.readObject();
+            // perform query
+            List<String> searchResult = db.search(searchParameters);
+            // return result
+            out.writeBoolean(true);
+            out.writeObject(searchResult);
+        } catch (IOException e) {
+            LOGGER.severe(e.toString());
+        }
+    }
+
+    // handles a request to update a property
+    private void updateRequest(PropertyQueries db) throws ClassNotFoundException {
+        LOGGER.info("Processing an UPDATE request.");
+        try {
+            // read the argument, a RentalProperty
+            RentalProperty property = (RentalProperty) in.readObject();
+            // update database
+            db.updateProperty(property);
+            // indicate success
+            out.writeBoolean(true);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 

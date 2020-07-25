@@ -15,7 +15,6 @@
     </target>
 
     <target name="jar" depends="compile">
-        <mkdir dir="build/jar"/>
         <jar destfile="build/jar/client.jar" basedir="build/classes">
             <manifest>
                 <attribute name="Main-Class" value="com.rentals.rentalmanager.client.Client"/>
@@ -24,16 +23,37 @@
         <jar destfile="build/jar/server.jar" basedir="build/classes">
             <manifest>
                 <attribute name="Main-Class" value="com.rentals.rentalmanager.server.Server"/>
+                <attribute name="Class-Path" value="./lib/derby.jar:./lib/derbyclient.jar" />
             </manifest>
         </jar>
     </target>
 
-    <target name="runclient" depends="jar">
-        <java jar="build/jar/client.jar" fork="true"/>
+    <target name="dist" depends="jar">
+        <mkdir dir="build/dist"/>
+        <mkdir dir="build/dist/server"/>
+        <mkdir dir="build/dist/client"/>
+        <mkdir dir="build/dist/server/lib"/>
+
+        <!-- copy the jars -->
+        <copy todir="build/dist/server" file="build/jar/server.jar" />
+        <copy todir="build/dist/client" file="build/jar/client.jar" />
+        <!-- copy the libraries for the server -->
+        <copy todir="build/dist/server/lib" >
+            <fileset dir="lib" includes="**"/>
+        </copy>
     </target>
 
-    <target name="runserver" depends="jar">
-        <java jar="build/jar/server.jar" fork="true"/>
+    <path id="server.classpath">
+        <fileset dir="build/dist/server"></fileset>
+        <fileset dir="build/dist/server/lib"></fileset>
+    </path>
+
+    <target name="runclient" depends="dist">
+        <java jar="build/dist/client/client.jar" fork="true"/>
+    </target>
+
+    <target name="runserver" depends="dist">
+        <java jar="build/dist/server/server.jar" fork="true" />
     </target>
 
 </project>
