@@ -95,7 +95,6 @@ public class DBTest {
 
     private static void testGetTenantsForProperty(TenantQueries queries) {
         queries.getTenantsForProperty(testProperty);
-        assert testProperty.getTenantNames().length == 2;
         assert testProperty.getTenant("Don Joe") != null;
         assert testProperty.getTenant("John Doe") != null;
         LOGGER.info("testGetTenantsForProperty passed.");

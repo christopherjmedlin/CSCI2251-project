@@ -103,6 +103,13 @@ public abstract class RentalProperty implements Serializable {
     }
 
     /**
+     * Returns true if there are 1 or more tenants, 0 if not.
+     */
+    public boolean hasTenants() {
+        return this.tenants.size() > 0;
+    }
+
+    /**
      * Returns the name of each tenant associated with this property.
      */
     public String[] getTenantNames() {

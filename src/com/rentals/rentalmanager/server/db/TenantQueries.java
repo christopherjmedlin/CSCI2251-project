@@ -20,7 +20,7 @@ public class TenantQueries {
 
     private Connection db;
 
-    private PreparedStatement updateTenants;
+    private PreparedStatement updateTenant;
     private PreparedStatement newTenant;
     private PreparedStatement tenantsByProperty;
 
@@ -48,7 +48,7 @@ public class TenantQueries {
             );
 
             // updates a specific tenant
-            this.updateTenants = db.prepareStatement(
+            this.updateTenant = db.prepareStatement(
                     "UPDATE tenants " +
                      "SET name=?, email=?, phone=? WHERE id=?"
             );
@@ -94,5 +94,23 @@ public class TenantQueries {
         } catch (SQLException e) {
             LOGGER.severe(e.toString());
         }
+    }
+
+    /**
+     * Updates the row in the database corresponding to the given Tenant object.
+     */
+    public int updateTenant(Tenant t) {
+        try {
+            this.updateTenant.setString(1, t.getFullName());
+            this.updateTenant.setString(2, t.getEmail());
+            this.updateTenant.setString(3, t.getPhone());
+            this.updateTenant.setInt(4, t.getId());
+
+            return this.updateTenant.executeUpdate();
+        } catch (SQLException e) {
+            LOGGER.severe(e.toString());
+        }
+
+        return 0;
     }
 }

@@ -88,10 +88,16 @@ public class PropertyQueries {
 
         try (ResultSet results = this.propertyById.executeQuery()) {
             // returns null after try clause if no property is found (if !results.next())
-            if (results.next()) return DatabaseUtilities.getPropertyFromResultSet(results);
+            if (results.next()) {
+                RentalProperty p = DatabaseUtilities.getPropertyFromResultSet(results);
+                // populate tenants
+                new TenantQueries(this.db).getTenantsForProperty(p);
+                return p;
+            }
         } catch (SQLException e) {
             LOGGER.severe(e.toString());
         }
+
         return null;
     }
 
@@ -138,7 +144,6 @@ public class PropertyQueries {
      * Ensures the property in the database has columns identical to the fields of the RentalProperty object
      */
     public int updateProperty(RentalProperty property) {
-        // TODO eventually, this is supposed to also update every tenant that the object contains.
         LOGGER.info("Updating property with id " + property.getId() + ".");
         try {
             // set parameters of the prepared statement to the values of the RentalProperty object
@@ -146,9 +151,14 @@ public class PropertyQueries {
             updateProperty.setDouble(2, property.getPrice());
             updateProperty.setDate(3, Date.valueOf(property.getMoveInDate()));
             updateProperty.setString(4, property.getDescription());
-            //TODO once the tenant-related code is complete, this should be set to 1 if there are tenants and 0 if not. this must be done!!!
-            updateProperty.setInt(5, 0);
+            updateProperty.setInt(5, property.hasTenants() ? 1 : 0);
             updateProperty.setString(6, property.getId());
+
+            // update each tenant inside of the property.
+            TenantQueries tenants = new TenantQueries(this.db);
+            for (String key : property.getTenantNames()) {
+                tenants.updateTenant(property.getTenant(key));
+            }
 
             return updateProperty.executeUpdate();
         } catch (SQLException e) {
