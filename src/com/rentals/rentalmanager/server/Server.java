@@ -1,7 +1,11 @@
 package com.rentals.rentalmanager.server;
 
+import com.rentals.rentalmanager.server.db.DatabaseUtilities;
+
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.logging.ConsoleHandler;
+import java.sql.SQLException;
 import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -11,6 +15,18 @@ public class Server {
 
     public static void main(String[] args) {
         initializeLogging();
+
+        try {
+            if (!DatabaseUtilities.isDatabaseInitialized("testing", "testing"))
+                DatabaseUtilities.initDB("testing", "testing");
+        } catch (SQLException e) {
+            LOGGER.severe("Could not connect to or initialize database.");
+            LOGGER.severe(e.toString());
+            System.exit(1);
+        } catch (FileNotFoundException e) {
+            LOGGER.severe("Attempted to initialize database, but could not find init.sql file");
+            System.exit(1);
+        }
 
         // TODO important! port number should be configurable (by command line args perhaps)
         int port = 1234;

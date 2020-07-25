@@ -5,15 +5,63 @@ import com.rentals.rentalmanager.common.RentalProperty;
 import com.rentals.rentalmanager.common.SingleHouse;
 import com.rentals.rentalmanager.common.VacationRental;
 
-import java.sql.Date;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.sql.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
+import java.util.logging.Logger;
 
 public class DatabaseUtilities {
-    public static final String URL = "jdbc:derby:properties";
+    private static final Logger LOGGER = Logger.getLogger(DatabaseUtilities.class.getName());
+    public static final String URL = "jdbc:derby:properties;create=true";
+
+    /**
+     * Checks if the init.sql script has been ran in the database. If the database doesn't exist at all, a new one will
+     * be created (but the tables will remain uninitialized)
+     */
+    public static boolean isDatabaseInitialized(String username, String password) throws SQLException {
+        Connection db = DriverManager.getConnection(DatabaseUtilities.URL, username, password);
+        DatabaseMetaData dbm = db.getMetaData();
+        // check if properties table is there
+        ResultSet tables = dbm.getTables(null, null, "PROPERTIES", null);
+        // return whether there is any table in the result set
+        boolean initialized = tables.next();
+        db.close();
+        return initialized;
+    }
+
+    /**
+     * Runs init.sql in the database (assumes it is the in the working directory)
+     */
+    public static void initDB(String username, String password) throws SQLException, FileNotFoundException {
+        Connection db = DriverManager.getConnection(DatabaseUtilities.URL, username, password);
+        Scanner in = new Scanner(new File("init.sql"));
+
+        StringBuilder statement = new StringBuilder();
+        while (in.hasNext()) {
+            String line = in.nextLine();
+            if (!line.startsWith("--")) {
+                statement.append(line);
+            }
+            // if it is the end of an operation
+            if (line.contains(";")) {
+                // get rid of the semicolon i guess?
+                statement.deleteCharAt(statement.length()-1);
+                Statement st = db.createStatement();
+                // run it
+                st.execute(statement.toString());
+                // clear the string builder
+                statement.delete(0, statement.length());
+            }
+            else {
+                statement.append('\n');
+            }
+        }
+        db.close();
+    }
 
     /**
      * Returns the ids of every property in the given list whose payment status matches the one given.
