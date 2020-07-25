@@ -81,7 +81,7 @@ public class PropertyQueries {
             LOGGER.severe(e.toString());
         }
 
-        return null;
+        return properties;
     }
 
     public int newProperty(String id) {
