@@ -6,12 +6,7 @@
 
     <target name="compile">
         <mkdir dir="build/classes"/>
-        <javac srcdir="src" destdir="build/classes">
-            <classpath>
-                <pathelement path="lib/derby.jar"/>
-                <pathelement path="lib/derbyclient.jar"/>
-            </classpath>
-        </javac>
+        <javac srcdir="src" destdir="build/classes" />
     </target>
 
     <target name="jar" depends="compile">
@@ -43,17 +38,18 @@
         </copy>
     </target>
 
-    <path id="server.classpath">
-        <fileset dir="build/dist/server"></fileset>
-        <fileset dir="build/dist/server/lib"></fileset>
-    </path>
-
     <target name="runclient" depends="dist">
         <java jar="build/dist/client/client.jar" fork="true"/>
     </target>
 
     <target name="runserver" depends="dist">
-        <java jar="build/dist/server/server.jar" fork="true" />
+        <java classname="com.rentals.rentalmanager.server.Server" fork="true">
+            <classpath>
+                <pathelement path="build/dist/server/server.jar"/>
+                <pathelement path="lib/derby.jar"/>
+                <pathelement path="lib/derbyclient.jar"/>
+            </classpath>
+        </java>
     </target>
 
 </project>

@@ -1,9 +1,7 @@
 package com.rentals.rentalmanager.server.db;
 
 import com.rentals.rentalmanager.common.*;
-import org.apache.derby.iapi.db.Database;
 
-import javax.xml.crypto.Data;
 import java.sql.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
