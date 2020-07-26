@@ -4,6 +4,7 @@ import com.rentals.rentalmanager.common.PropertySearch;
 import com.rentals.rentalmanager.common.RentalProperty;
 import com.rentals.rentalmanager.common.RequestType;
 import com.rentals.rentalmanager.server.db.PropertyQueries;
+import com.rentals.rentalmanager.server.db.TenantQueries;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -51,109 +52,117 @@ public class ProcessRequest implements Runnable {
     }
 
     // based on the request type, passes control to another appropriate method
-    private void handle(RequestType type) throws IOException {
-        PropertyQueries db = new PropertyQueries(this.dbUser, this.dbPass);
+    private void handle(RequestType type) {
+        PropertyQueries properties = new PropertyQueries(this.dbUser, this.dbPass);
         try {
             switch (type) {
                 case GET:
-                    getRequest(db);
+                    getRequest(properties);
                     break;
                 case NEW:
-                    newRequest(db);
+                    newRequest(properties);
                     break;
                 case SEARCH:
-                    searchRequest(db);
+                    searchRequest(properties);
                     break;
                 case UPDATE:
-                    updateRequest(db);
+                    updateRequest(properties);
+                    break;
+                case NEWTENANT:
+                    newTenantRequest(properties);
+                    break;
+                case DELETETENANT:
+                    deleteTenantRequest(properties);
                     break;
             }
             // flush the output stream
             this.out.flush();
         } catch (ClassNotFoundException e) {
             try {
-                sendError("Could not determine class of object sent");
+                sendError("Could not determine class of object sent.");
             } catch (IOException ioe) {
                 LOGGER.severe(ioe.toString());
             }
+        } catch (IOException e) {
+            LOGGER.severe(e.toString());
         }
-        db.close();
+        properties.close();
     }
 
     // handles a get request from the user for a property
-    private void getRequest(PropertyQueries db) throws ClassNotFoundException {
+    private void getRequest(PropertyQueries db) throws ClassNotFoundException, IOException {
         LOGGER.info("Processing a GET request for a property.");
-        try {
-            String id = (String) in.readObject();
-            out.writeBoolean(true);
-            out.writeObject(db.getPropertyById(id));
-        } catch (IOException e) {
-            LOGGER.severe(e.toString());
-        }
+        String id = (String) in.readObject();
+        out.writeBoolean(true);
+        out.writeObject(db.getPropertyById(id));
     }
 
     // handles a request from the user to create a new property
-    private void newRequest(PropertyQueries db) throws ClassNotFoundException {
+    private void newRequest(PropertyQueries db) throws ClassNotFoundException, IOException {
         LOGGER.info("Processing a NEW property request.");
+        String id = (String) in.readObject();
         try {
-            String id = (String) in.readObject();
-            try {
-                db.newProperty(id);
-                out.writeBoolean(true);
-            } catch (IllegalArgumentException e) {
-                // this is ran if the ID already existed in the database
-                LOGGER.info("ID already exists.");
-                sendError(e.getMessage());
-            }
-        } catch (IOException e) {
-            LOGGER.severe(e.toString());
+            db.newProperty(id);
+            out.writeBoolean(true);
+        } catch (IllegalArgumentException e) {
+            // this is ran if the ID already existed in the database
+            LOGGER.info("ID already exists.");
+            sendError(e.getMessage());
         }
     }
 
     // handles a search request from the user
-    private void searchRequest(PropertyQueries db) throws ClassNotFoundException {
+    private void searchRequest(PropertyQueries db) throws ClassNotFoundException, IOException {
         LOGGER.info("Processing a SEARCH request.");
-        try {
-            // read search parameters
-            PropertySearch searchParameters = (PropertySearch) in.readObject();
-            // perform query
-            List<String> searchResult = db.search(searchParameters);
-            // return result
-            out.writeBoolean(true);
-            out.writeObject(searchResult);
-        } catch (IOException e) {
-            LOGGER.severe(e.toString());
-        }
+        // read search parameters
+        PropertySearch searchParameters = (PropertySearch) in.readObject();
+        // perform query
+        List<String> searchResult = db.search(searchParameters);
+        // return result
+        out.writeBoolean(true);
+        out.writeObject(searchResult);
     }
 
     // handles a request to update a property
-    private void updateRequest(PropertyQueries db) throws ClassNotFoundException {
+    private void updateRequest(PropertyQueries db) throws ClassNotFoundException, IOException {
         LOGGER.info("Processing an UPDATE request.");
-        try {
-            // read the argument, a RentalProperty
-            RentalProperty property = (RentalProperty) in.readObject();
-            // update database
-            db.updateProperty(property);
-            // indicate success
-            out.writeBoolean(true);
-        } catch (IOException e) {
-            LOGGER.severe(e.toString());
-        }
+        // read the argument, a RentalProperty
+        RentalProperty property = (RentalProperty) in.readObject();
+        // update database
+        db.updateProperty(property);
+        // indicate success
+        out.writeBoolean(true);
     }
 
     // handles a request to delete a property
-    private void deleteRequest(PropertyQueries db) throws ClassNotFoundException {
+    private void deleteRequest(PropertyQueries db) throws ClassNotFoundException, IOException {
         LOGGER.info("Processing a DELETE request.");
-        try {
-            // read ID
-            String propertyId = (String) in.readObject();
-            // delete
-            db.deleteProperty(propertyId);
-            // success
-            out.writeBoolean(true);
-        } catch (IOException e) {
-            LOGGER.severe(e.toString());
-        }
+        // read ID
+        String propertyId = (String) in.readObject();
+        // delete
+        db.deleteProperty(propertyId);
+        // success
+        out.writeBoolean(true);
+    }
+
+    // handles a request to create a new tenant
+    private void newTenantRequest(PropertyQueries db) throws ClassNotFoundException, IOException {
+        LOGGER.info("Processing a NEWTENANT request.");
+        // read the ID of the property the new tenant will belong to
+        String propertyId = (String) in.readObject();
+        // read the full name of the tenant
+        String name = (String) in.readObject();
+        new TenantQueries(db.getConnection()).newTenant(propertyId, name);
+        out.writeBoolean(true);
+    }
+
+    // handles a request to delete a tenant
+    private void deleteTenantRequest(PropertyQueries db) throws IOException {
+        LOGGER.info("Processing a DELETETENANT request.");
+        // read ID of tenant to be deleted
+        int tenantId = in.readInt();
+        new TenantQueries(db.getConnection()).deleteTenant(tenantId);
+        out.writeBoolean(true);
     }
 
     private void sendError(String message) throws IOException {

@@ -202,6 +202,10 @@ public class PropertyQueries {
         return 0;
     }
 
+    public Connection getConnection() {
+        return this.db;
+    }
+
     public void close() {
         try {
             LOGGER.info("Closing database connection.");
