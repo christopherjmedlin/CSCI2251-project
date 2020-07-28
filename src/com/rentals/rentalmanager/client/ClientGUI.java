@@ -1,7 +1,9 @@
 package com.rentals.rentalmanager.client;
 
 import com.rentals.rentalmanager.common.RentalProperty;
+import com.rentals.rentalmanager.common.RequestType;
 import com.rentals.rentalmanager.common.SingleHouse;
+import com.rentals.rentalmanager.server.ProcessRequest;
 import com.rentals.rentalmanager.server.db.PropertyQueries;
 
 import javax.swing.*;
@@ -11,7 +13,10 @@ import javax.swing.event.ListSelectionListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 
 import static java.time.LocalDate.now;
@@ -43,21 +48,18 @@ public class ClientGUI extends JFrame {
     private JButton addTenantButton;
 
     //class variables
-    private String id;
-    private boolean editable = false;
+    public String id;
+    ArrayList<String> idList = new ArrayList<>();
     private int clicks = 0;
     private LocalDate localDate = now();
 
     DefaultListModel dlm = new DefaultListModel();
-    //PropertyQueries propertyQueries = new PropertyQueries();
-
 
     //constructor
-    public ClientGUI() {
+    public ClientGUI() throws IOException {
 
         add(guiPanel);
         addTenantButton.setVisible(false);
-        this.pack();
 
 
         //Action listeners
@@ -65,9 +67,16 @@ public class ClientGUI extends JFrame {
         addPropertyButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-              addProperty();
+                System.out.println(idList.toString());
+
+                    try {
+                        addProperty();
+                    } catch (IOException ioException) {
+                        ioException.printStackTrace();
+                    }
             }
         });
+
         //apply properties to property list
         propertyList.setModel(dlm);
 
@@ -77,6 +86,7 @@ public class ClientGUI extends JFrame {
                 setDescription(id);
             }
         });
+
         editPropertyButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -105,14 +115,30 @@ public class ClientGUI extends JFrame {
 
     //methods
 
+
     //prompts user for property ID and adds to property list
-    private void addProperty() {
+    private void addProperty() throws IOException {
+       Client client = new Client(null);
 
         String id = (String)JOptionPane.showInputDialog(
                 guiPanel, "Enter property ID", "Client",
                 JOptionPane.PLAIN_MESSAGE, null, null, null);
 
-        dlm.addElement(id);
+
+        if (client.newAlreadyExists(id) == true) {
+            JOptionPane.showMessageDialog(guiPanel,"Property with ID already exists.");
+
+        } else {
+            //add property to dB
+            client.addNew(id);
+
+            //add property to GUI list
+            dlm.addElement(id);
+
+            //add ID of property to array of strings
+            idList.add(id);
+        }
+
     }
 
     //sets fields and text panes to properties values
@@ -145,6 +171,4 @@ public class ClientGUI extends JFrame {
         descriptionPane.setEditable(true);
 
     }
-
-
 }
