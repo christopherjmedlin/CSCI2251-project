@@ -1,9 +1,6 @@
 package com.rentals.rentalmanager.server.db;
 
-import com.rentals.rentalmanager.common.Apartment;
-import com.rentals.rentalmanager.common.RentalProperty;
-import com.rentals.rentalmanager.common.SingleHouse;
-import com.rentals.rentalmanager.common.VacationRental;
+import com.rentals.rentalmanager.common.*;
 
 import java.sql.*;
 import java.time.LocalDate;
@@ -17,58 +14,73 @@ import java.util.logging.Logger;
 public class PropertyQueries {
     private static final Logger LOGGER = Logger.getLogger(PropertyQueries.class.getName());
 
-    private static final String URL = "jdbc:derby:properties";
-
     private Connection db;
-    private PreparedStatement allProperties;
+    private PreparedStatement allPropertyIds;
     private PreparedStatement propertyById;
     private PreparedStatement newProperty;
     private PreparedStatement updateProperty;
+    private PreparedStatement propertiesByVacancyAndString;
+    private PreparedStatement deleteProperty;
 
     public PropertyQueries(String username, String password) {
         try {
-            this.db = DriverManager.getConnection(URL, username, password);
+            this.db = DriverManager.getConnection(DatabaseUtilities.URL, username, password);
 
-            // returns every property in the db
-            this.allProperties = this.db.prepareStatement(
-                    "SELECT * FROM properties ORDER BY id"
+            // retrieves every property in the db
+            this.allPropertyIds = this.db.prepareStatement(
+                    "SELECT id FROM properties ORDER BY id"
             );
 
+            // retrieves a property based on its id
             this.propertyById = this.db.prepareStatement(
                     "SELECT * FROM properties WHERE id=?"
+            );
+
+            // searches based on whether there are tenants AND checks the description against a string
+            this.propertiesByVacancyAndString = this.db.prepareStatement(
+                    "SELECT * FROM properties " +
+                     "WHERE hasTenants=? AND description LIKE ?"
             );
 
             // updates every field in a property, with the last argument being the id of it
             this.updateProperty = this.db.prepareStatement(
                     "UPDATE properties " +
-                       "SET balance=?, price=?, moveIn=?, description=? " +
-                       "WHERE id=?"
+                    "SET balance=?, price=?, moveIn=?, description=?, hasTenants=?" +
+                    "WHERE id=?"
             );
 
             // create new property with user-defined id, with everything else empty
             this.newProperty = this.db.prepareStatement(
                     "INSERT INTO properties " +
-                       "(id) VALUES (?)"
+                       "(id, moveIn) VALUES (?, ?)"
+            );
+
+            this.deleteProperty = this.db.prepareStatement(
+                    "DELETE FROM properties " +
+                    "WHERE id=?"
             );
         } catch (SQLException e) {
             LOGGER.severe(e.toString());
         }
     }
 
-    public List<RentalProperty> getAllProperties() {
-        List<RentalProperty> properties = new ArrayList<>();
+    /**
+     * @return a list of every property id in the database
+     */
+    public List<String> getAllPropertyIds() {
+        List<String> properties = new ArrayList<>();
 
         LOGGER.info("Querying all properties.");
-        try (ResultSet results = this.allProperties.executeQuery()) {
+        try (ResultSet results = this.allPropertyIds.executeQuery()) {
             while (results.next()) {
-                properties.add(getPropertyFromResultSet(results));
+                properties.add(results.getString("id"));
             }
             return properties;
         } catch (SQLException e) {
             LOGGER.severe(e.toString());
         }
 
-        return properties;
+        return null;
     }
 
     public RentalProperty getPropertyById(String id) {
@@ -79,24 +91,119 @@ public class PropertyQueries {
         }
 
         try (ResultSet results = this.propertyById.executeQuery()) {
-            if (results.next()) return getPropertyFromResultSet(results);
+            // returns null after try clause if no property is found (if !results.next())
+            if (results.next()) {
+                RentalProperty p = DatabaseUtilities.getPropertyFromResultSet(results);
+                // populate tenants
+                new TenantQueries(this.db).getTenantsForProperty(p);
+                return p;
+            }
         } catch (SQLException e) {
             LOGGER.severe(e.toString());
         }
+
         return null;
     }
 
-    // TODO the move in date should probably by default be the current date.
-    public int newProperty(String id) {
-        LOGGER.info("Adding new property to database with id " + id + ".");
+    /**
+     * Performs a search based on the information in the PropertySearch instance and returns a list of ids satisfying
+     * it.
+     */
+    public List<String> search(PropertySearch s) {
+        LOGGER.info("Performing search request.");
+        PreparedStatement statement = null;
+        List<RentalProperty> properties = new ArrayList<>();
+
+        // attempt to just search for a specific property by ID
+        RentalProperty property = getPropertyById(s.search);
+        if (property != null) {
+            List<String> ids = new ArrayList<>();
+            // return a string list containing just the one id of the retrieved property.
+            ids.add(property.getId());
+            return ids;
+        }
+
         try {
-            newProperty.setString(1, id);
-            return newProperty.executeUpdate();
+            // set first parameter, hasTenants
+            this.propertiesByVacancyAndString.setInt(1, s.hasTenants ? 1 : 0);
+            // set second parameter, the description search
+            this.propertiesByVacancyAndString.setString(2, s.search);
+        } catch (SQLException e) {
+            LOGGER.severe(e.toString());
+        }
+
+        try (ResultSet results = this.propertiesByVacancyAndString.executeQuery()) {
+            while (results.next()) {
+                properties.add(DatabaseUtilities.getPropertyFromResultSet(results));
+            }
+        } catch (SQLException e) {
+            LOGGER.severe(e.toString());
+        }
+
+        // gets the ids of those properties satisfying the rental status requirement
+        return DatabaseUtilities.filterByRentalStatus(properties, s.rentalStatus);
+    }
+
+    /**
+     * Ensures the property in the database has columns identical to the fields of the RentalProperty object
+     */
+    public int updateProperty(RentalProperty property) {
+        LOGGER.info("Updating property with id " + property.getId() + ".");
+        try {
+            // set parameters of the prepared statement to the values of the RentalProperty object
+            updateProperty.setDouble(1, property.getBalance());
+            updateProperty.setDouble(2, property.getPrice());
+            updateProperty.setDate(3, Date.valueOf(property.getMoveInDate()));
+            updateProperty.setString(4, property.getDescription());
+            updateProperty.setInt(5, property.hasTenants() ? 1 : 0);
+            updateProperty.setString(6, property.getId());
+
+            // update each tenant inside of the property.
+            TenantQueries tenants = new TenantQueries(this.db);
+            for (String key : property.getTenantNames()) {
+                tenants.updateTenant(property.getTenant(key));
+            }
+
+            return updateProperty.executeUpdate();
         } catch (SQLException e) {
             LOGGER.severe(e.toString());
         }
 
         return 0;
+    }
+
+    public int newProperty(String id) throws IllegalArgumentException {
+        LOGGER.info("Adding new property to database with id " + id + ".");
+        try {
+            newProperty.setString(1, id);
+            newProperty.setDate(2, Date.valueOf(LocalDate.now()));
+            return newProperty.executeUpdate();
+        } catch (SQLIntegrityConstraintViolationException e) {
+            // throw this so the calling method can send an error to the client
+            throw new IllegalArgumentException("ID already exists.");
+        } catch (SQLException e) {
+            LOGGER.severe(e.toString());
+        }
+
+        return 0;
+    }
+
+    public int deleteProperty(String id) {
+        LOGGER.info("Deleting property from database with id " + id + ".");
+        try {
+            // delete every tenant associated with this property
+            new TenantQueries(this.db).deleteTenantsByProperty(id);
+            deleteProperty.setString(1, id);
+            return deleteProperty.executeUpdate();
+        } catch (SQLException e) {
+            LOGGER.severe(e.toString());
+        }
+
+        return 0;
+    }
+
+    public Connection getConnection() {
+        return this.db;
     }
 
     public void close() {
@@ -106,27 +213,5 @@ public class PropertyQueries {
         } catch (SQLException e) {
             LOGGER.severe(e.toString());
         }
-    }
-
-    private RentalProperty getPropertyFromResultSet(ResultSet results) throws SQLException {
-        String id = results.getString("id");
-        int balance = results.getInt("balance");
-        int price = results.getInt("price");
-        Date moveInTemp = results.getDate("moveIn");
-        // important to not call toLocalDate if the moveIn is null, else we will have null pointer exception
-        LocalDate moveIn = moveInTemp == null ? null : moveInTemp.toLocalDate();
-        String description = results.getString("description");
-
-        // construct different subclasses of RentalProperty based on the first character of the id
-        switch (id.charAt(0)) {
-            case 'A':
-                return new Apartment(balance, price, id, description, moveIn);
-            case 'S':
-                return new SingleHouse(balance, price, id, description, moveIn);
-            case 'V':
-                return new VacationRental(balance, price, id, description, moveIn);
-        }
-
-        return null;
     }
 }

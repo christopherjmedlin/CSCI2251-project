@@ -2,42 +2,71 @@ package com.rentals.rentalmanager.common;
 
 public class Tenant {
 
-    private String tenantFirstName;
-    private String tenantLastName;
-    private String tenantEmail;
+    private int id;
+    private String firstName;
+    private String lastName;
+    private String email;
+    private String phone;
 
-
-    public Tenant() {
-
+    public Tenant(int id, String firstName, String lastName, String email, String phone) {
+        this.id = id;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.email = email;
+        this.phone = phone;
     }
 
-    public String getTenantFirstName() {
-        return tenantFirstName;
+    public Tenant(int id, String firstName, String lastName) {
+        this(id, firstName, lastName, "", "");
     }
 
-    public void setTenantFirstName(String tenantFirstName) {
-        this.tenantFirstName = tenantFirstName;
+    public Tenant(int id) {
+        this(id, "", "");
     }
 
-    public String getTenantLastName() {
-        return tenantLastName;
+    public int getId() {
+        return this.id;
     }
 
-    public void setTenantLastName(String tenantLastName) {
-        this.tenantLastName = tenantLastName;
+    public String getFirstName() {
+        return firstName;
     }
 
-    public String getTenantEmail() {
-        return tenantEmail;
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
     }
 
-    public void setTenantEmail(String tenantEmail) {
-        this.tenantEmail = tenantEmail;
+    public String getLastName() {
+        return lastName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
+
+    public String getFullName() {
+        return this.firstName + " " + this.lastName;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
     }
 
     @Override
     public String toString() {
-        return String.format("%s %s %s", getTenantFirstName(), getTenantLastName(), getTenantEmail());
+        return String.format("%s %s %s", getFirstName(), getLastName(), getEmail());
     }
 
 }

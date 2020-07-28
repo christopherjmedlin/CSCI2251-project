@@ -1,10 +1,11 @@
-package com.rentals.rentalmanager.common;
+package com.rentals.rentalmanager.tests;
+
+import com.rentals.rentalmanager.common.*;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.time.LocalDate;
 import java.util.Arrays;
-import java.util.IllegalFormatException;
 import java.util.InputMismatchException;
 import java.util.Scanner;
 
@@ -57,7 +58,7 @@ public class RentalPropertyTest {
         Scanner scanner = new Scanner(new File(path));
         String[][] someRows = new String[propertyIndex][5];
 
-        while(scanner.hasNext() == true) {
+        while(scanner.hasNext()) {
             for(int i = 0; i < numberOfProperties(); i++) {
                 String[] tempRow = scanner.nextLine().trim().split(" ");
                 for(int j = 0; j < tempRow.length; j++) {
@@ -116,17 +117,17 @@ public class RentalPropertyTest {
 
 
           for (int i = 0; i < numTenants; i++) {
-              newTenant[i] = new Tenant();
+              newTenant[i] = new Tenant(i);
               System.out.println("\nFirst name of tenant: ");
-              newTenant[i].setTenantFirstName(input.next());
+              newTenant[i].setFirstName(input.next());
 
               System.out.println("Last name of tenant: ");
-              newTenant[i].setTenantLastName(input.next());
+              newTenant[i].setLastName(input.next());
 
               System.out.println("Email of tenant: ");
-              newTenant[i].setTenantEmail(input.next());
+              newTenant[i].setEmail(input.next());
 
-              properties[propertyNum].setTenants(newTenant);
+              properties[propertyNum].addTenant(newTenant[i]);
           }
 
           System.out.println("Add tenants to another property? '1' or '0'");
@@ -146,7 +147,7 @@ public class RentalPropertyTest {
 
         for(int i = 0; i < numberOfProperties(); i++) {
             System.out.print("Tenants of property #" + (i + 1) + " ");
-            System.out.println(Arrays.deepToString(properties[i].getTenants()));
+            System.out.println(Arrays.deepToString(properties[i].getTenantNames()));
         }
 
 

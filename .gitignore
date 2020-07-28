@@ -1,7 +1,6 @@
 .idea
 *.iml
 *.class
-*.jar
 build/
 properties/
 derby.log

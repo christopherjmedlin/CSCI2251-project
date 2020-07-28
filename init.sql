@@ -1,10 +1,11 @@
--- property id is defined by user after creating a new property, and is thus not auto incremented
+-- property id is defined by user after creating a new property, and is thus not auto incremented\
+-- hasTenants is 0 if there are no tenants, 1 if there are
 CREATE TABLE properties (
     id VARCHAR(10) NOT NULL,
-    balance INT,
-    price INT,
+    balance FLOAT,
+    price FLOAT,
     moveIn DATE,
-    tenants INT,
+    hasTenants INT,
     description VARCHAR(500),
     PRIMARY KEY (id)
 );

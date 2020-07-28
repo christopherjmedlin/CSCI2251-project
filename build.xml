@@ -6,12 +6,7 @@
 
     <target name="compile">
         <mkdir dir="build/classes"/>
-        <javac srcdir="src" destdir="build/classes">
-            <classpath>
-                <pathelement path="lib/derby.jar"/>
-                <pathelement path="lib/derbyclient.jar"/>
-            </classpath>
-        </javac>
+        <javac srcdir="src" destdir="build/classes"/>
     </target>
 
     <target name="jar" depends="compile">
