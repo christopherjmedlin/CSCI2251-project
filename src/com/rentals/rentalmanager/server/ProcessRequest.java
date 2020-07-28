@@ -1,6 +1,7 @@
 package com.rentals.rentalmanager.server;
 
 import com.rentals.rentalmanager.common.RequestType;
+import com.rentals.rentalmanager.server.db.PropertyQueries;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -18,17 +19,23 @@ public class ProcessRequest implements Runnable {
     ObjectInputStream in;
     ObjectOutputStream out;
 
+    String dbUser;
+    String dbPass;
+
     /**
      * @param sock reference to the socket which this task will read a request from
      */
-    public ProcessRequest(Socket sock) {
+    public ProcessRequest(Socket sock, String dbUser, String dbPass) {
         this.sock = sock;
+        this.dbPass = dbPass;
+        this.dbUser = dbUser;
     }
 
     public void run() {
         try {
             getInputAndOutputStreams();
             RequestType type = (RequestType) in.readObject();
+            handle(type);
         } catch (IOException | ClassNotFoundException e) {
             LOGGER.severe(e.toString());
         }
@@ -42,6 +49,49 @@ public class ProcessRequest implements Runnable {
 
     // based on the request type, passes control to another appropriate method
     private void handle(RequestType type) throws IOException {
-        out.writeBoolean(true);
+        PropertyQueries db = new PropertyQueries(this.dbUser, this.dbPass);
+        try {
+            switch (type) {
+                case GET:
+                    getRequest(db);
+                    break;
+                case NEW:
+                    newRequest(db);
+                    break;
+            }
+        } catch (ClassNotFoundException e) {
+            try {
+                out.writeBoolean(false);
+                out.writeObject("Could not determine class of object sent");
+            } catch (IOException ioe) {
+                LOGGER.severe(ioe.toString());
+            }
+        }
+        db.close();
+    }
+
+    // handles a get request from the user for a property
+    private void getRequest(PropertyQueries db) throws ClassNotFoundException {
+        // TODO it is extremely important that this operation returns an appropriate error message if ID already exists
+        // this can be done by allowing SQLIntegrity exceptions to be thrown (or whatever they're called)
+        LOGGER.info("Processing a GET request for a property.");
+        try {
+            String id = (String) in.readObject();
+            out.writeBoolean(true);
+            out.writeObject(db.getPropertyById(id));
+        } catch (IOException e) {
+            LOGGER.severe(e.toString());
+        }
+    }
+
+    private void newRequest(PropertyQueries db) throws ClassNotFoundException {
+        LOGGER.info("Processing a NEW property request.");
+        try {
+            String id = (String) in.readObject();
+            db.newProperty(id);
+            out.writeBoolean(true);
+        } catch (IOException e) {
+            LOGGER.severe(e.toString());
+        }
     }
 }

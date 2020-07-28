@@ -18,28 +18,30 @@ public class PropertyQueries {
     private static final Logger LOGGER = Logger.getLogger(PropertyQueries.class.getName());
 
     private static final String URL = "jdbc:derby:properties";
-    private String username;
-    private String password;
 
     private Connection db;
     private PreparedStatement allProperties;
+    private PreparedStatement propertyById;
     private PreparedStatement newProperty;
     private PreparedStatement updateProperty;
 
-    public PropertyQueries() {
+    public PropertyQueries(String username, String password) {
         try {
-            this.db = DriverManager.getConnection(URL);
+            this.db = DriverManager.getConnection(URL, username, password);
 
-            // TODO i am assuming rows are ordered by the primary key by default, but we should make sure of this
             // returns every property in the db
             this.allProperties = this.db.prepareStatement(
-                    "SELECT * FROM properties"
+                    "SELECT * FROM properties ORDER BY id"
+            );
+
+            this.propertyById = this.db.prepareStatement(
+                    "SELECT * FROM properties WHERE id=?"
             );
 
             // updates every field in a property, with the last argument being the id of it
             this.updateProperty = this.db.prepareStatement(
                     "UPDATE properties " +
-                       "SET balance=? price=? moveIn=? description=? " +
+                       "SET balance=?, price=?, moveIn=?, description=? " +
                        "WHERE id=?"
             );
 
@@ -58,23 +60,8 @@ public class PropertyQueries {
 
         LOGGER.info("Querying all properties.");
         try (ResultSet results = this.allProperties.executeQuery()) {
-
             while (results.next()) {
-                String id = results.getString("id");
-                int balance = results.getInt("balance");
-                int price = results.getInt("price");
-                LocalDate moveIn = results.getDate("moveIn").toLocalDate();
-                String description = results.getString("description");
-
-                // construct different subclasses of RentalProperty based on the first character of the id
-                switch (id.charAt(0)) {
-                    case 'A':
-                        properties.add(new Apartment(balance, price, id, description, moveIn));
-                    case 'S':
-                        properties.add(new SingleHouse(balance, price, id, description, moveIn));
-                    case 'V':
-                        properties.add(new VacationRental(balance, price, id, description, moveIn));
-                }
+                properties.add(getPropertyFromResultSet(results));
             }
             return properties;
         } catch (SQLException e) {
@@ -84,6 +71,22 @@ public class PropertyQueries {
         return properties;
     }
 
+    public RentalProperty getPropertyById(String id) {
+        try {
+            propertyById.setString(1, id);
+        } catch (SQLException e) {
+            LOGGER.severe(e.toString());
+        }
+
+        try (ResultSet results = this.propertyById.executeQuery()) {
+            if (results.next()) return getPropertyFromResultSet(results);
+        } catch (SQLException e) {
+            LOGGER.severe(e.toString());
+        }
+        return null;
+    }
+
+    // TODO the move in date should probably by default be the current date.
     public int newProperty(String id) {
         LOGGER.info("Adding new property to database with id " + id + ".");
         try {
@@ -103,5 +106,27 @@ public class PropertyQueries {
         } catch (SQLException e) {
             LOGGER.severe(e.toString());
         }
+    }
+
+    private RentalProperty getPropertyFromResultSet(ResultSet results) throws SQLException {
+        String id = results.getString("id");
+        int balance = results.getInt("balance");
+        int price = results.getInt("price");
+        Date moveInTemp = results.getDate("moveIn");
+        // important to not call toLocalDate if the moveIn is null, else we will have null pointer exception
+        LocalDate moveIn = moveInTemp == null ? null : moveInTemp.toLocalDate();
+        String description = results.getString("description");
+
+        // construct different subclasses of RentalProperty based on the first character of the id
+        switch (id.charAt(0)) {
+            case 'A':
+                return new Apartment(balance, price, id, description, moveIn);
+            case 'S':
+                return new SingleHouse(balance, price, id, description, moveIn);
+            case 'V':
+                return new VacationRental(balance, price, id, description, moveIn);
+        }
+
+        return null;
     }
 }
