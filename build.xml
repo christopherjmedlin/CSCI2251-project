@@ -32,6 +32,9 @@
         <!-- copy the jars -->
         <copy todir="build/dist/server" file="build/jar/server.jar" />
         <copy todir="build/dist/client" file="build/jar/client.jar" />
+        <!-- copy config -->
+        <copy todir="build/dist/server" file="server.properties" />
+        <copy todir="build/dist/server" file="init.sql" />
         <!-- copy the libraries for the server -->
         <copy todir="build/dist/server/lib" >
             <fileset dir="lib" includes="**"/>
