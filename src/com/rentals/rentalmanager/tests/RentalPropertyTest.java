@@ -1,4 +1,6 @@
-package com.rentals.rentalmanager.common;
+package com.rentals.rentalmanager.tests;
+
+import com.rentals.rentalmanager.common.*;
 
 import java.io.File;
 import java.io.FileNotFoundException;

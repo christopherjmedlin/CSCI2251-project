@@ -33,9 +33,9 @@ public abstract class RentalProperty implements Serializable {
     protected abstract int dueDatesSinceMoveIn();
 
     /**
-     * Returns true if a due date is approaching, false if not.
+     * Returns the next due date based on the current date.
      */
-    protected abstract boolean dueDateApproaching();
+    protected abstract LocalDate nextDueDate();
 
     /**
      * Helper method for calculating the duration between the move-in date and the current date
@@ -43,6 +43,16 @@ public abstract class RentalProperty implements Serializable {
      */
     protected Period rentalPeriod() {
         return Period.between(this.getMoveInDate(), LocalDate.now());
+    }
+
+    public boolean dueDateApproaching() {
+        LocalDate dueDate = this.nextDueDate();
+        Period per = Period.between(LocalDate.now(), dueDate);
+        // TODO make this configurable as something other than a week.
+        if (per.getDays() >= 7) {
+            return true;
+        }
+        return false;
     }
 
     /**
