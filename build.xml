@@ -45,8 +45,14 @@
         <java jar="build/dist/client/client.jar" fork="true"/>
     </target>
 
-    <target name="runserver" depends="jar">
-        <java jar="build/jar/server.jar" fork="true"/>
+    <target name="runserver" depends="dist">
+        <java classname="com.rentals.rentalmanager.server.Server" fork="true">
+            <classpath>
+                <pathelement path="build/dist/server/server.jar"/>
+                <pathelement path="lib/derby.jar"/>
+                <pathelement path="lib/derbyclient.jar"/>
+            </classpath>
+        </java>
     </target>
 
 </project>

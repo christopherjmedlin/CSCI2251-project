@@ -61,7 +61,7 @@ public class ServerTest {
 
     private static void testNewAlreadyExists() throws IOException, ClassNotFoundException {
         connect();
-        out.writeObject(RequestType.GET);
+        out.writeObject(RequestType.NEW);
         out.writeObject("VABQ555");
         assert !in.readBoolean();
         String message = (String) in.readObject();
