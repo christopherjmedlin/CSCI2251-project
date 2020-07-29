@@ -68,6 +68,9 @@ public class ProcessRequest implements Runnable {
                 case UPDATE:
                     updateRequest(properties);
                     break;
+                case DELETE:
+                    deleteRequest(properties);
+                    break;
                 case NEWTENANT:
                     newTenantRequest(properties);
                     break;

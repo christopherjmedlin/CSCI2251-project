@@ -56,22 +56,14 @@
                   </component>
                 </children>
               </scrollpane>
-              <component id="87873" class="javax.swing.JButton" binding="addPropertyButton" default-binding="true">
-                <constraints>
-                  <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
-                </constraints>
-                <properties>
-                  <text value="Add Property"/>
-                </properties>
-              </component>
               <component id="9a501" class="javax.swing.JComboBox" binding="comboBox1" default-binding="true">
                 <constraints>
                   <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="2" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
                 </constraints>
                 <properties>
                   <model>
-                    <item value="Occupied"/>
-                    <item value="Available"/>
+                    <item value="Tenants"/>
+                    <item value="No Tenants"/>
                   </model>
                 </properties>
               </component>
@@ -87,6 +79,22 @@
                   </model>
                 </properties>
               </component>
+              <component id="a30f6" class="javax.swing.JButton" binding="deletePropertyButton" default-binding="true">
+                <constraints>
+                  <grid row="3" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <text value="Delete Property"/>
+                </properties>
+              </component>
+              <component id="87873" class="javax.swing.JButton" binding="addPropertyButton" default-binding="true">
+                <constraints>
+                  <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="0" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <text value="Add Property"/>
+                </properties>
+              </component>
             </children>
           </grid>
           <grid id="d1b68" binding="rightPanel" layout-manager="GridLayoutManager" row-count="7" column-count="3" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
@@ -95,7 +103,7 @@
               <splitpane position="right"/>
             </constraints>
             <properties/>
-            <border type="none" title="Rental ### Information" title-justification="2"/>
+            <border type="none" title-justification="2"/>
             <children>
               <component id="42614" class="javax.swing.JLabel" binding="tenInfoLabel">
                 <constraints>
