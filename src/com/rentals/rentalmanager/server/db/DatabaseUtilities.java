@@ -20,7 +20,7 @@ public class DatabaseUtilities {
 
     /**
      * Checks if the init.sql script has been ran in the database. If the database doesn't exist at all, a new one will
-     * be created (but the tables will remain uninitialized)
+     * be created (but the tables will remain uninitialized), and false will be returned
      */
     public static boolean isDatabaseInitialized(String username, String password) throws SQLException {
         Connection db = DriverManager.getConnection(DatabaseUtilities.URL, username, password);

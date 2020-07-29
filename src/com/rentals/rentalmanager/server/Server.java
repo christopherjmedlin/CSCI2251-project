@@ -2,13 +2,14 @@ package com.rentals.rentalmanager.server;
 
 import com.rentals.rentalmanager.server.db.DatabaseUtilities;
 
-import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.Properties;
 
 public class Server {
     private static final Logger LOGGER = Logger.getLogger(Server.class.getName());
@@ -28,16 +29,30 @@ public class Server {
             System.exit(1);
         }
 
-        // TODO important! port number should be configurable (by command line args perhaps)
-        int port = 1234;
-        ServerStart server = new ServerStart(port);
+        Properties config = getProperties();
+        ServerStart server = new ServerStart(config);
+
         try {
-            LOGGER.info("Starting server on port " + port + ".");
-            // TODO define db user and password from cmd args!!!!!
+            LOGGER.info("Starting server on port " + config.getProperty("port", "1234") + ".");
             server.run("testing", "testing");
         } catch (IOException e) {
             LOGGER.severe("Could not start server, port is already being used by another application.");
         }
+    }
+
+    private static Properties getProperties() {
+        Properties config = new Properties();
+
+        try {
+            FileInputStream in = new FileInputStream("server.properties");
+            config.load(in);
+        } catch (FileNotFoundException e) {
+            LOGGER.warning("Server properties file not found.");
+        } catch (IOException e) {
+            LOGGER.severe(e.toString());
+        }
+
+        return config;
     }
 
     // registers a file handler to the main logger

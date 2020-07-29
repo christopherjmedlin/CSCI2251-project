@@ -22,9 +22,27 @@
             </manifest>
         </jar>
     </target>
+  
+    <target name="dist" depends="jar">
+        <mkdir dir="build/dist"/>
+        <mkdir dir="build/dist/server"/>
+        <mkdir dir="build/dist/client"/>
+        <mkdir dir="build/dist/server/lib"/>
 
-    <target name="runclient" depends="jar">
-        <java jar="build/jar/client.jar" fork="true"/>
+        <!-- copy the jars -->
+        <copy todir="build/dist/server" file="build/jar/server.jar" />
+        <copy todir="build/dist/client" file="build/jar/client.jar" />
+        <!-- copy config -->
+        <copy todir="build/dist/server" file="server.properties" />
+        <copy todir="build/dist/server" file="init.sql" />
+        <!-- copy the libraries for the server -->
+        <copy todir="build/dist/server/lib" >
+            <fileset dir="lib" includes="**"/>
+        </copy>
+    </target>
+
+    <target name="runclient" depends="dist">
+        <java jar="build/dist/client/client.jar" fork="true"/>
     </target>
 
     <target name="runserver" depends="jar">
