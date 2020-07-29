@@ -68,11 +68,11 @@ public class ClientGUI extends JFrame {
             public void actionPerformed(ActionEvent e) {
                 System.out.println(idList.toString());
 
-                    try {
-                        addProperty();
-                    } catch (IOException ioException) {
-                        ioException.printStackTrace();
-                    }
+                try {
+                    addProperty();
+                } catch (IOException ioException) {
+                    ioException.printStackTrace();
+                }
             }
         });
 
@@ -156,18 +156,15 @@ public class ClientGUI extends JFrame {
                guiPanel, "Enter property ID", "Client",
                JOptionPane.PLAIN_MESSAGE, null, null, null);
 
-        if (cc.idAlreadyExists(id) == true) {
-            JOptionPane.showMessageDialog(guiPanel,"Property with ID already exists.");
-
-        } else {
-            //add property to dB
-            cc.addNew(id);
-
+        // attempt to send NEW request to server
+        if (cc.addNew(id)) {
             //add property to GUI list
             dlm.addElement(id);
 
             //add ID of property to array of strings
             idList.add(id);
+        } else {
+            JOptionPane.showMessageDialog(guiPanel, cc.getErrorMessage());
         }
     }
 
@@ -181,7 +178,7 @@ public class ClientGUI extends JFrame {
         //rightPanel.setBorder(BorderFactory.createTitledBorder("Property " + selected + " description"));
 
 
-        if (cc.idAlreadyExists(id) == true) {
+        if (!cc.addNew(id)) {
 
             rentField.setText("");
             rentField.setEditable(false);

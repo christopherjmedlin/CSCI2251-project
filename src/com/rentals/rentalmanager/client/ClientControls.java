@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.time.LocalDate;
 
 public class ClientControls {
+    String error;
 
     public ClientControls() throws IOException {
     }
@@ -16,27 +17,27 @@ public class ClientControls {
     ClientGUI gui = new ClientGUI();
     Client client = new Client(null);
 
-    public void addNew(String id) throws IOException {
+    /**
+     * Makes a NEW request to the server to create a property.
+     * @param id the id of the new property
+     * @return the success indicator sent by the server
+     */
+    public boolean addNew(String id) throws IOException {
         client.connect();
         client.outputStream.writeObject(RequestType.NEW);
         client.outputStream.writeObject(id);
 
-        client.inputStream.readBoolean();
+        boolean success = client.inputStream.readBoolean();
+        if (!success) {
+            try {
+                // read the error message
+                this.error = (String) client.inputStream.readObject();
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            }
+        }
         client.close();
-    }
-
-    public boolean idAlreadyExists(String id) throws IOException {
-        client.connect();
-        client.outputStream.writeObject(RequestType.GET);
-        client.outputStream.writeObject(id);
-
-        if(!client.inputStream.readBoolean()) {
-            client.close();
-            return true;
-
-        } else
-            client.close();
-        return false;
+        return success;
     }
 
     public void deleteProperty(String id) throws IOException {
@@ -91,5 +92,9 @@ public class ClientControls {
 
     }
 
+    // if a server communication went wrong, this method will return the message.
+    public String getErrorMessage() {
+        return this.error;
+    }
 }
 
