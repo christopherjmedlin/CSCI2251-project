@@ -90,6 +90,22 @@ public abstract class RentalProperty implements Serializable {
         return description;
     }
 
+    public void setBalance(double balance) {
+        this.balance = balance;
+    }
+
+    public void setPrice(double price) {
+        this.price = price;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public void setMoveIn(LocalDate moveIn) {
+        this.moveIn = moveIn;
+    }
+
     /**
      * Associates a new tenant with the property.
      */

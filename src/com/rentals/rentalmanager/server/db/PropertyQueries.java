@@ -125,8 +125,10 @@ public class PropertyQueries {
         try {
             // set first parameter, hasTenants
             this.propertiesByVacancyAndString.setInt(1, s.hasTenants ? 1 : 0);
-            // set second parameter, the description search
-            this.propertiesByVacancyAndString.setString(2, s.search.isEmpty() ? "%" : s.search);
+            // set second parameter, the description
+            // if it's empty, just set it to %, which will match anything. otherwise, it should be %search%, which
+            // will check if the keyword(s) is present in the description.
+            this.propertiesByVacancyAndString.setString(2, s.search.isEmpty() ? "%" : "%" + s.search + "%");
         } catch (SQLException e) {
             LOGGER.severe(e.toString());
         }

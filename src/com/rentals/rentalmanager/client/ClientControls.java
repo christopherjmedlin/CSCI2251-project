@@ -85,46 +85,28 @@ public class ClientControls {
         outputStream.writeObject(id);
         inputStream.readBoolean();
         RentalProperty property = (RentalProperty) inputStream.readObject();
+        close();
         return property;
     }
 
-    public void updateProperty(String id) throws IOException, ClassNotFoundException {
+    public boolean updateProperty(RentalProperty property) throws IOException, ClassNotFoundException {
         double balance;
 
         connect();
         outputStream.writeObject(RequestType.UPDATE);
-
-        RentalProperty r = null;
-        if(id.charAt(0) == 'S') {
-            balance = Double.parseDouble(gui.balanceField.getText());
-            r = new SingleHouse(balance, 100.00, id,
-                    "single house", LocalDate.now());
-        } else if(id.charAt(0) == 'A') {
-            balance = Double.parseDouble(gui.balanceField.getText());
-            r = new Apartment(balance, 100.00, id,
-                    "single house", LocalDate.now());
-
-        } else if(id.charAt(0) == 'V') {
-            balance = Double.parseDouble(gui.balanceField.getText());
-            r = new Apartment(balance, 100.00, id,
-                    "single house", LocalDate.now());
-        } else {
-            System.out.println("Invalid property type.");
-            close();
-            return;
-        }
-        outputStream.writeObject(r);
-        inputStream.readBoolean();
+        outputStream.writeObject(property);
+        boolean success = inputStream.readBoolean();
         close();
+        return success;
     }
 
     public List<String> search(PropertySearch s) throws IOException, ClassNotFoundException {
         connect();
-
         outputStream.writeObject(RequestType.SEARCH);
         outputStream.writeObject(s);
-
-        return inputStream.readBoolean() ? (List<String>) inputStream.readObject() : null;
+        List<String> ids = inputStream.readBoolean() ? (List<String>) inputStream.readObject() : null;
+        close();
+        return ids;
     }
 
     // if a server communication went wrong, this method will return the message.

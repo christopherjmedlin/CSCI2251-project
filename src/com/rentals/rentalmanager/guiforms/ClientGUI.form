@@ -155,6 +155,7 @@
                   </grid>
                 </constraints>
                 <properties>
+                  <editable value="false"/>
                   <text value="Property description string will be displayed here"/>
                 </properties>
               </component>
