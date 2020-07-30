@@ -1,20 +1,51 @@
 package com.rentals.rentalmanager.client;
 
-import com.rentals.rentalmanager.common.Apartment;
-import com.rentals.rentalmanager.common.RentalProperty;
-import com.rentals.rentalmanager.common.RequestType;
-import com.rentals.rentalmanager.common.SingleHouse;
+import com.rentals.rentalmanager.common.*;
 
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.InetAddress;
+import java.net.Socket;
 import java.time.LocalDate;
+import java.util.List;
 
 public class ClientControls {
     String error;
     ClientGUI gui;
-    Client client = new Client(null);
+    String server;
 
-    public ClientControls(ClientGUI gui) throws IOException {
+    Socket sock;
+    ObjectOutputStream outputStream;
+    ObjectInputStream inputStream;
+
+
+    public ClientControls(ClientGUI gui, String server) throws IOException {
+        this.server = server;
         this.gui = gui;
+    }
+
+    public void connect() throws IOException {
+        // attempts connection
+        sock = new Socket(InetAddress.getByName(server), 1234);
+        streams();
+        System.out.println("Connected to server.");
+    }
+
+    void close() throws IOException {
+        outputStream.close();
+        inputStream.close();
+        sock.close();
+        System.out.println("Disconnected from server.");
+    }
+
+    private void streams() throws IOException {
+        //to server
+        outputStream = new ObjectOutputStream(sock.getOutputStream());
+        outputStream.flush();
+
+        //from server
+        inputStream = new ObjectInputStream(sock.getInputStream());
     }
 
     /**
@@ -23,73 +54,77 @@ public class ClientControls {
      * @return the success indicator sent by the server
      */
     public boolean addNew(String id) throws IOException {
-        client.connect();
-        client.outputStream.writeObject(RequestType.NEW);
-        client.outputStream.writeObject(id);
+        connect();
+        outputStream.writeObject(RequestType.NEW);
+        outputStream.writeObject(id);
 
-        boolean success = client.inputStream.readBoolean();
+        boolean success = inputStream.readBoolean();
         if (!success) {
             try {
                 // read the error message
-                this.error = (String) client.inputStream.readObject();
+                this.error = (String) inputStream.readObject();
             } catch (ClassNotFoundException e) {
                 e.printStackTrace();
             }
         }
-        client.close();
+        close();
         return success;
     }
 
     public void deleteProperty(String id) throws IOException {
-        client.connect();
-        client.outputStream.writeObject(RequestType.DELETE);
-        client.outputStream.writeObject(id);
-        client.inputStream.readBoolean();
-        client.close();
+        connect();
+        outputStream.writeObject(RequestType.DELETE);
+        outputStream.writeObject(id);
+        inputStream.readBoolean();
+        close();
     }
 
     public RentalProperty getProperty(String id) throws IOException, ClassNotFoundException {
-        client.connect();
-        client.outputStream.writeObject(RequestType.GET);
-        client.outputStream.writeObject(id);
-        client.inputStream.readBoolean();
-        RentalProperty property = (RentalProperty) client.inputStream.readObject();
+        connect();
+        outputStream.writeObject(RequestType.GET);
+        outputStream.writeObject(id);
+        inputStream.readBoolean();
+        RentalProperty property = (RentalProperty) inputStream.readObject();
         return property;
     }
 
     public void updateProperty(String id) throws IOException, ClassNotFoundException {
         double balance;
 
-        client.connect();
-        client.outputStream.writeObject(RequestType.UPDATE);
+        connect();
+        outputStream.writeObject(RequestType.UPDATE);
 
+        RentalProperty r = null;
         if(id.charAt(0) == 'S') {
             balance = Double.parseDouble(gui.balanceField.getText());
-            RentalProperty s = new SingleHouse(balance, 100.00, id,
+            r = new SingleHouse(balance, 100.00, id,
                     "single house", LocalDate.now());
-            client.outputStream.writeObject(s);
-            client.inputStream.readBoolean();
-            client.close();
-
         } else if(id.charAt(0) == 'A') {
             balance = Double.parseDouble(gui.balanceField.getText());
-            RentalProperty a = new Apartment(balance, 100.00, id,
+            r = new Apartment(balance, 100.00, id,
                     "single house", LocalDate.now());
-            client.outputStream.writeObject(a);
-            client.inputStream.readBoolean();
-            client.close();
 
         } else if(id.charAt(0) == 'V') {
             balance = Double.parseDouble(gui.balanceField.getText());
-            RentalProperty v = new Apartment(balance, 100.00, id,
+            r = new Apartment(balance, 100.00, id,
                     "single house", LocalDate.now());
-            client.outputStream.writeObject(v);
-            client.inputStream.readBoolean();
-            client.close();
-        } else
+        } else {
             System.out.println("Invalid property type.");
-            client.close();
+            close();
+            return;
+        }
+        outputStream.writeObject(r);
+        inputStream.readBoolean();
+        close();
+    }
 
+    public List<String> search(PropertySearch s) throws IOException, ClassNotFoundException {
+        connect();
+
+        outputStream.writeObject(RequestType.SEARCH);
+        outputStream.writeObject(s);
+
+        return inputStream.readBoolean() ? (List<String>) inputStream.readObject() : null;
     }
 
     // if a server communication went wrong, this method will return the message.

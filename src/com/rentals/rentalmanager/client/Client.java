@@ -15,7 +15,6 @@ public class Client extends JFrame {
 
     //GUI
     public JPanel mainPanel;
-    ClientGUI gui = new ClientGUI();
 
     //Networking
     private Socket sock;
@@ -31,38 +30,9 @@ public class Client extends JFrame {
 
         mainPanel = new JPanel();
 
-        ClientGUI guiPanel = new ClientGUI();
+        ClientGUI guiPanel = new ClientGUI(host);
         add(guiPanel.getGuiPanel());
         this.setSize(720, 300);
-
     }
-
-    public void connect() throws IOException {
-        // attempts connection
-        sock = new Socket(InetAddress.getByName(server), 1234);
-        streams();
-        System.out.println("Connected to server.");
-    }
-
-    void close() throws IOException {
-        outputStream.close();
-        inputStream.close();
-        sock.close();
-        System.out.println("Disconnected from server.");
-    }
-
-    private void streams() throws IOException {
-        //to server
-        outputStream = new ObjectOutputStream(sock.getOutputStream());
-        outputStream.flush();
-
-        //from server
-        inputStream = new ObjectInputStream(sock.getInputStream());
-    }
-
-
-
-
-
 }
 

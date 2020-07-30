@@ -1,5 +1,6 @@
 package com.rentals.rentalmanager.client;
 
+import com.rentals.rentalmanager.common.PropertySearch;
 import com.rentals.rentalmanager.common.RentalProperty;
 import com.rentals.rentalmanager.common.RequestType;
 import com.rentals.rentalmanager.common.SingleHouse;
@@ -49,6 +50,7 @@ public class ClientGUI extends JFrame {
     private JButton deletePropertyButton;
 
     //class variables
+    private String host;
     public String id;
     ArrayList<String> idList = new ArrayList<>();
     private int clicks = 0;
@@ -57,11 +59,10 @@ public class ClientGUI extends JFrame {
     DefaultListModel dlm = new DefaultListModel();
 
     //constructor
-    public ClientGUI() throws IOException {
-        this.setEditable(false);
-
+    public ClientGUI(String host) throws IOException {
         add(guiPanel);
         addTenantButton.setVisible(false);
+        this.host = host;
 
         //Action listeners
         addPropertyButton.addActionListener(new ActionListener() {
@@ -123,6 +124,9 @@ public class ClientGUI extends JFrame {
                 }
             }
         });
+
+        // populate with initial search
+        this.search();
     }
 
     public JPanel getGuiPanel() {
@@ -131,7 +135,7 @@ public class ClientGUI extends JFrame {
 
     //prompts user for property ID and adds to property list
     private void addProperty() throws IOException {
-        ClientControls cc = new ClientControls(this);
+        ClientControls cc = new ClientControls(this, this.host);
 
         String newId = (String)JOptionPane.showInputDialog(
                guiPanel, "Enter property ID", "Client",
@@ -159,7 +163,7 @@ public class ClientGUI extends JFrame {
         id = (String) this.propertyList.getSelectedValue();
 
         try {
-            ClientControls cc = new ClientControls(this);
+            ClientControls cc = new ClientControls(this, this.host);
             property = cc.getProperty(id);
         } catch (IOException e) {
             e.printStackTrace();
@@ -176,7 +180,7 @@ public class ClientGUI extends JFrame {
     //sets fields to editable, need to send results to dB
     // TODO update values with text entered in field
     public void editProperty() throws IOException, ClassNotFoundException {
-        ClientControls cc = new ClientControls(this);
+        ClientControls cc = new ClientControls(this, this.host);
         id = propertyList.getSelectedValue().toString();
         this.setEditable(true);
         cc.updateProperty(id);
@@ -189,8 +193,36 @@ public class ClientGUI extends JFrame {
         descriptionPane.setEditable(editable);
     }
 
+    private void search() {
+        int paymentStatus = 0;
+        switch (this.comboBox2.getSelectedIndex()) {
+            case 0:
+                paymentStatus = 1;
+            case 1:
+                paymentStatus = 2;
+            case 2:
+                paymentStatus = 0;
+        }
+
+        PropertySearch searchParameters = new PropertySearch(
+                this.searchField.getText(),
+                paymentStatus,
+                comboBox2.getSelectedIndex() == 1
+        );
+
+        List<String> ids = new ArrayList<>(0);
+        try {
+            ids = new ClientControls(this, this.host).search(searchParameters);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+        dlm.addAll(ids);
+    }
+
     private void removeFromList() throws IOException {
-        ClientControls cc = new ClientControls(this);
+        ClientControls cc = new ClientControls(this, this.host);
         id = propertyList.getSelectedValue().toString();
 
         int selectedIndex = propertyList.getSelectedIndex();
