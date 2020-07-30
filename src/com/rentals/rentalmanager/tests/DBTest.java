@@ -20,7 +20,6 @@ public class DBTest {
     public static void main(String[] args) throws SQLException {
         PropertyQueries queries = new PropertyQueries(args[0], args[1]);
         testNewProperty(queries);
-        testGetAllProperties(queries);
         testGetPropertyById(queries);
         testUpdateProperty(queries);
         testSearch(queries);
@@ -42,15 +41,6 @@ public class DBTest {
             LOGGER.info("test properties already made");
         }
         LOGGER.info("testNewProperty passed.");
-    }
-
-    private static void testGetAllProperties(PropertyQueries queries) {
-        List<String> properties = queries.getAllPropertyIds();
-        assert properties.size() >= 3;
-        assert properties.get(0).equals("AABQ12-321");
-        assert properties.get(1).equals("SABQ452");
-        assert properties.get(2).equals("VABQ123");
-        LOGGER.info("testGetAllProperties passed.");
     }
 
     private static void testGetPropertyById(PropertyQueries queries) {
