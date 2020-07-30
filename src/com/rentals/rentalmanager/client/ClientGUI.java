@@ -58,6 +58,7 @@ public class ClientGUI extends JFrame {
 
     //constructor
     public ClientGUI() throws IOException {
+        this.setEditable(false);
 
         add(guiPanel);
         addTenantButton.setVisible(false);
@@ -82,15 +83,7 @@ public class ClientGUI extends JFrame {
         propertyList.addListSelectionListener(new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent e) {
-                try {
-
                     setDescription(id);
-
-                } catch (IOException ioException) {
-                    ioException.printStackTrace();
-                } catch (ClassNotFoundException classNotFoundException) {
-                    classNotFoundException.printStackTrace();
-                }
             }
         });
 
@@ -104,19 +97,7 @@ public class ClientGUI extends JFrame {
 
                 if (clicks % 2 == 0) {
                     editPropertyButton.setText("Edit Property");
-
-                    try {
-
-                        setDescription(id);
-
-                    } catch (IOException ioException) {
-                        ioException.printStackTrace();
-                    } catch (ClassNotFoundException classNotFoundException) {
-                        classNotFoundException.printStackTrace();
-                    }
-
                     addTenantButton.setVisible(false);
-
                 } else {
                     editPropertyButton.setText("Save Information");
                     try {
@@ -150,78 +131,66 @@ public class ClientGUI extends JFrame {
 
     //prompts user for property ID and adds to property list
     private void addProperty() throws IOException {
-        ClientControls cc = new ClientControls();
+        ClientControls cc = new ClientControls(this);
 
-        String id = (String)JOptionPane.showInputDialog(
+        String newId = (String)JOptionPane.showInputDialog(
                guiPanel, "Enter property ID", "Client",
                JOptionPane.PLAIN_MESSAGE, null, null, null);
 
         // attempt to send NEW request to server
-        if (cc.addNew(id)) {
+        if (cc.addNew(newId)) {
             //add property to GUI list
-            dlm.addElement(id);
+            dlm.addElement(newId);
 
             //add ID of property to array of strings
-            idList.add(id);
+            idList.add(newId);
+            propertyList.setSelectedValue(newId, true);
+            setDescription(newId);
         } else {
             JOptionPane.showMessageDialog(guiPanel, cc.getErrorMessage());
         }
     }
 
-    //sets fields and text panes to properties values
+    // sets fields and text panes to selected property's values
     // TODO add unique values correlating to properties variables
-    private void setDescription(String id) throws IOException, ClassNotFoundException {
-        ClientControls cc = new ClientControls();
+    private void setDescription(String id) {
+        // retrieve property from server
+        RentalProperty property = null;
+        id = (String) this.propertyList.getSelectedValue();
 
-        // sets title, but breaks deleteProperty for some reason.
-        //String selected = propertyList.getSelectedValue().toString();
-        //rightPanel.setBorder(BorderFactory.createTitledBorder("Property " + selected + " description"));
-
-
-        if (!cc.addNew(id)) {
-
-            rentField.setText("");
-            rentField.setEditable(false);
-            balanceField.setText("");
-            balanceField.setEditable(false);
-            moveInDateField.setText("");
-            moveInDateField.setEditable(false);
-            descriptionPane.setText("");
-            descriptionPane.setEditable(false);
-        } else {
-
-            String data = "" + (propertyList.getSelectedIndex() + 1);
-
-            rentField.setText(data);
-            rentField.setEditable(false);
-            balanceField.setText(data);
-            balanceField.setEditable(false);
-            moveInDateField.setText(data);
-            moveInDateField.setEditable(false);
-            descriptionPane.setText("property #" + data);
-            descriptionPane.setEditable(false);
+        try {
+            ClientControls cc = new ClientControls(this);
+            property = cc.getProperty(id);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
         }
 
+        rentField.setText(Double.toString(property.getPrice()));
+        balanceField.setText(Double.toString(property.getBalance()));
+        moveInDateField.setText(property.getMoveInDate().toString());
+        descriptionPane.setText(property.getDescription());
     }
 
     //sets fields to editable, need to send results to dB
     // TODO update values with text entered in field
     public void editProperty() throws IOException, ClassNotFoundException {
-        ClientControls cc = new ClientControls();
+        ClientControls cc = new ClientControls(this);
         id = propertyList.getSelectedValue().toString();
-
-        rentField.setEditable(true);
-        balanceField.setEditable(true);
-        moveInDateField.setEditable(true);
-        descriptionPane.setEditable(true);
-
+        this.setEditable(true);
         cc.updateProperty(id);
+    }
 
-
+    private void setEditable(boolean editable) {
+        rentField.setEditable(editable);
+        balanceField.setEditable(editable);
+        moveInDateField.setEditable(editable);
+        descriptionPane.setEditable(editable);
     }
 
     private void removeFromList() throws IOException {
-        ClientControls cc = new ClientControls();
+        ClientControls cc = new ClientControls(this);
         id = propertyList.getSelectedValue().toString();
 
         int selectedIndex = propertyList.getSelectedIndex();

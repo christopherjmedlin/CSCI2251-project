@@ -10,12 +10,12 @@ import java.time.LocalDate;
 
 public class ClientControls {
     String error;
-
-    public ClientControls() throws IOException {
-    }
-
-    ClientGUI gui = new ClientGUI();
+    ClientGUI gui;
     Client client = new Client(null);
+
+    public ClientControls(ClientGUI gui) throws IOException {
+        this.gui = gui;
+    }
 
     /**
      * Makes a NEW request to the server to create a property.
