@@ -70,7 +70,8 @@ public class DatabaseUtilities {
         int i = 0;
         List<String> ids = new ArrayList<>();
         for (RentalProperty p : properties) {
-            if (p.paymentStatus() == rentalStatus)
+            // 0 corresponds to the n/a option in the GUI, so it shouldn't filter at all.
+            if (p.paymentStatus() == rentalStatus || rentalStatus == 0)
                 ids.add(p.getId());
         }
         return ids;

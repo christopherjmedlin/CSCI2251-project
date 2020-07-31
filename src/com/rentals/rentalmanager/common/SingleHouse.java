@@ -26,6 +26,7 @@ public class SingleHouse extends RentalProperty {
         if (duration.getYears() >= 1) {
             // subtract that year from the period
             duration = duration.minusYears(1);
+            dueDates++;
         } else {
             return dueDates;
         }
@@ -40,7 +41,8 @@ public class SingleHouse extends RentalProperty {
         // begin by adding a year
         LocalDate dueDate = this.getMoveInDate().plusYears(1);
         // continue incrementing months until the dueDate is past the current date
-        while (this.getMoveInDate().isAfter(LocalDate.now())) {
+        LocalDate currentDate = LocalDate.now();
+        while (currentDate.isAfter(dueDate)) {
             dueDate = dueDate.plusMonths(1);
         }
         return dueDate;
