@@ -100,6 +100,43 @@ public class ClientControls {
         return success;
     }
 
+    public boolean addNewTenant(String id, String name) throws IOException {
+        connect();
+        outputStream.writeObject(RequestType.NEWTENANT);
+
+        outputStream.writeObject(id);
+        outputStream.writeObject(name);
+
+        boolean success = inputStream.readBoolean();
+        if(!success) {
+            try {
+                // read the error message
+                this.error = (String) inputStream.readObject();
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            }
+        }
+        close();
+        return success;
+    }
+
+    public boolean hasTenant(RentalProperty property) {
+        int numTenants = property.getTenantNames().length;
+        if(!((numTenants) == 0)) {
+            return true;
+        } else
+            return false;
+    }
+
+    public String[] getTenants(String id) throws IOException, ClassNotFoundException {
+        connect();
+        RentalProperty property = getProperty(id);
+        String[] tenants = property.getTenantNames();
+
+        return tenants;
+
+    }
+
     public List<String> search(PropertySearch s) throws IOException, ClassNotFoundException {
         connect();
         outputStream.writeObject(RequestType.SEARCH);
