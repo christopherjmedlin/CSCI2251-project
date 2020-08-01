@@ -1,5 +1,6 @@
 package com.rentals.rentalmanager.client;
 
+import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.rentals.rentalmanager.common.RentalProperty;
 import com.rentals.rentalmanager.common.RequestType;
 
@@ -28,11 +29,11 @@ public class Client extends JFrame {
         super("Client");
         server = host;
 
-
         mainPanel = new JPanel();
 
         ClientGUI guiPanel = new ClientGUI();
         add(guiPanel.getGuiPanel());
+<<<<<<< Updated upstream
         this.setSize(720, 300);
 
     }
@@ -64,5 +65,10 @@ public class Client extends JFrame {
 
 
 
+=======
+        this.setSize(815, 300);
+    }
+
+>>>>>>> Stashed changes
 }
 

@@ -97,9 +97,9 @@ public abstract class RentalProperty implements Serializable {
         String name = tenant.getFullName();
         if (!this.tenants.containsKey(name))
             this.tenants.put(name, tenant);
-        // if the key is already in the map, append the id to ensure uniqueness
-        // for example, if "Bob" is already associated with this property, and a tenant with the same name is added to
-        // the property, that tenant will appear as "Bob#423", 423 being his id.
+            // if the key is already in the map, append the id to ensure uniqueness
+            // for example, if "Bob" is already associated with this property, and a tenant with the same name is added to
+            // the property, that tenant will appear as "Bob#423", 423 being his id.
         else
             this.tenants.put(name + "#" + tenant.getId(), tenant);
     }
@@ -129,5 +129,6 @@ public abstract class RentalProperty implements Serializable {
     @Override
     public String toString() {
         return String.format("%s %s %s %s %s", getBalance(), getPrice(), getId(), getDescription(), tenants);
+
     }
 }

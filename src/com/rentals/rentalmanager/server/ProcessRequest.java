@@ -157,6 +157,7 @@ public class ProcessRequest implements Runnable {
         String name = (String) in.readObject();
         new TenantQueries(db.getConnection()).newTenant(propertyId, name);
         out.writeBoolean(true);
+        LOGGER.info("Tenant added to property.");
     }
 
     // handles a request to delete a tenant
