@@ -53,7 +53,7 @@ public class DBTest {
 
     private static void testUpdateProperty(PropertyQueries queries) {
         RentalProperty p = new SingleHouse(100.00, 2000.00, "VABQ123", "it's a house",
-                LocalDate.of(1, 2, 3));
+                LocalDate.of(1, 2, 3), false);
         queries.updateProperty(p);
         RentalProperty updatedProperty = queries.getPropertyById("VABQ123");
         assert updatedProperty.getBalance() == 100.00;
@@ -89,12 +89,12 @@ public class DBTest {
 
     private static void testSearch(PropertyQueries queries) {
         // test searching by id
-        List<String> l = queries.search(new PropertySearch("AABQ12-321", 0, true));
+        List<String> l = queries.search(new PropertySearch("AABQ12-321", 0, true), false);
         assert l.size() == 1;
         assert l.get(0).equals("AABQ12-321");
 
         // searching by description
-        l = queries.search(new PropertySearch("VABQ12345", 0, true));
+        l = queries.search(new PropertySearch("VABQ12345", 0, true), false);
         assert l.size() == 1;
         assert l.get(0).equals("VABQ123");
 

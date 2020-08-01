@@ -11,6 +11,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.List;
+import java.util.Properties;
 import java.util.logging.Logger;
 
 /**
@@ -26,13 +27,16 @@ public class ProcessRequest implements Runnable {
     String dbUser;
     String dbPass;
 
+    Properties config;
+
     /**
      * @param sock reference to the socket which this task will read a request from
      */
-    public ProcessRequest(Socket sock, String dbUser, String dbPass) {
+    public ProcessRequest(Socket sock, Properties config) {
         this.sock = sock;
-        this.dbPass = dbPass;
-        this.dbUser = dbUser;
+        this.config = config;
+        this.dbPass = config.getProperty("dbpass", "testing");
+        this.dbUser = config.getProperty("dbuser", "testing");
     }
 
     public void run() {
@@ -125,7 +129,8 @@ public class ProcessRequest implements Runnable {
         // read search parameters
         PropertySearch searchParameters = (PropertySearch) in.readObject();
         // perform query
-        List<String> searchResult = db.search(searchParameters);
+        boolean endOfMonth = Boolean.parseBoolean(this.config.getProperty("endOfMonth", "false"));
+        List<String> searchResult = db.search(searchParameters, endOfMonth);
         // return result
         out.writeBoolean(true);
         out.writeObject(searchResult);

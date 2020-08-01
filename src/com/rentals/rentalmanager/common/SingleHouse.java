@@ -6,8 +6,9 @@ import java.time.Month;
 
 public class SingleHouse extends RentalProperty {
 
-    public SingleHouse(double balance, double price, String id, String description, LocalDate moveIn) {
-        super(balance, price, id, description, moveIn);
+    public SingleHouse(double balance, double price, String id, String description, LocalDate moveIn,
+                       boolean endOfMonth) {
+        super(balance, price, id, description, moveIn, endOfMonth);
 
         if (price < 0.0) {
             throw new IllegalArgumentException("Price must be greater than 0.0");

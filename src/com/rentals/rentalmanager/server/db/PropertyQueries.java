@@ -93,7 +93,7 @@ public class PropertyQueries {
         try (ResultSet results = this.propertyById.executeQuery()) {
             // returns null after try clause if no property is found (if !results.next())
             if (results.next()) {
-                RentalProperty p = DatabaseUtilities.getPropertyFromResultSet(results);
+                RentalProperty p = DatabaseUtilities.getPropertyFromResultSet(results, false);
                 // populate tenants
                 new TenantQueries(this.db).getTenantsForProperty(p);
                 return p;
@@ -108,8 +108,10 @@ public class PropertyQueries {
     /**
      * Performs a search based on the information in the PropertySearch instance and returns a list of ids satisfying
      * it.
+     *
+     * @param endOfMonth filters rental status with due dates at the end of the month
      */
-    public List<String> search(PropertySearch s) {
+    public List<String> search(PropertySearch s, boolean endOfMonth) {
         LOGGER.info("Performing search request.");
         List<RentalProperty> properties = new ArrayList<>();
 
@@ -135,7 +137,7 @@ public class PropertyQueries {
 
         try (ResultSet results = this.propertiesByVacancyAndString.executeQuery()) {
             while (results.next()) {
-                properties.add(DatabaseUtilities.getPropertyFromResultSet(results));
+                properties.add(DatabaseUtilities.getPropertyFromResultSet(results, endOfMonth));
             }
         } catch (SQLException e) {
             LOGGER.severe(e.toString());

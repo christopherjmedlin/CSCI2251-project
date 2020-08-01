@@ -81,7 +81,7 @@ public class DatabaseUtilities {
      * If the result set given contains a property, this will transfer the data from its columns into a RentalProperty
      * object with the appropriate subclass based on the first character of its ID, and then return that.
      */
-    public static RentalProperty getPropertyFromResultSet(ResultSet results) throws SQLException {
+    public static RentalProperty getPropertyFromResultSet(ResultSet results, boolean endOfMonth) throws SQLException {
         String id = results.getString("id");
         int balance = results.getInt("balance");
         int price = results.getInt("price");
@@ -93,11 +93,11 @@ public class DatabaseUtilities {
         // construct different subclasses of RentalProperty based on the first character of the id
         switch (id.charAt(0)) {
             case 'A':
-                return new Apartment(balance, price, id, description, moveIn);
+                return new Apartment(balance, price, id, description, moveIn, endOfMonth);
             case 'S':
-                return new SingleHouse(balance, price, id, description, moveIn);
+                return new SingleHouse(balance, price, id, description, moveIn, endOfMonth);
             case 'V':
-                return new VacationRental(balance, price, id, description, moveIn);
+                return new VacationRental(balance, price, id, description, moveIn, endOfMonth);
         }
 
         return null;

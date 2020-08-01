@@ -7,8 +7,9 @@ public class VacationRental extends RentalProperty {
     // 1 for daily, 2 for monthly, 3 for yearly
     private int paymentType;
 
-    public VacationRental(double balance, double price, String id, String description, LocalDate moveIn) {
-        super(balance, price, id, description, moveIn);
+    public VacationRental(double balance, double price, String id, String description, LocalDate moveIn,
+                          boolean endOfMonth) {
+        super(balance, price, id, description, moveIn, endOfMonth);
         // daily for now.
         this.paymentType = 1;
     }

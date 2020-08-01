@@ -7,8 +7,9 @@ public class Apartment extends RentalProperty {
     // Apartment can start out with 3, 6, or 12 months before going monthly.
     int start;
 
-    public Apartment(double balance, double price, String id, String description, LocalDate moveIn) {
-        super(balance, price, id, description, moveIn);
+    public Apartment(double balance, double price, String id, String description, LocalDate moveIn,
+                     boolean endOfMonth) {
+        super(balance, price, id, description, moveIn, endOfMonth);
         // for now start will just remain three
         this.start = 3;
     }
