@@ -1,9 +1,11 @@
 package com.rentals.rentalmanager.common;
 
+import java.io.Serializable;
+
 /**
  * Just a grouping of several search parameters, to be sent from client to server
  */
-public class PropertySearch {
+public class PropertySearch implements Serializable {
     public String search;
     public int rentalStatus;
     public boolean hasTenants;

@@ -24,6 +24,7 @@ public class Apartment extends RentalProperty {
         if (duration.getMonths() > this.start) {
             // subtract those months from the period
             duration = duration.minusMonths(this.start);
+            dueDates++;
         } else {
             return dueDates;
         }
@@ -38,7 +39,8 @@ public class Apartment extends RentalProperty {
         // begin by adding the start period
         LocalDate dueDate = this.getMoveInDate().plusMonths(this.start);
         // continue incrementing months until the dueDate is past the current date
-        while (this.getMoveInDate().isAfter(LocalDate.now())) {
+        LocalDate currentDate = LocalDate.now();
+        while (currentDate.isAfter(dueDate)) {
             dueDate = dueDate.plusMonths(1);
         }
         return dueDate;

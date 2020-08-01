@@ -1,10 +1,10 @@
-package com.rentals.rentalmanager.tests;
+package com.rentals.rentalmanager.client;
 import com.rentals.rentalmanager.client.Client;
 
 import javax.swing.*;
 import java.io.IOException;
 
-public class ClientTest {
+public class ClientRun {
 
     public static void main(String[] args) throws IOException {
         Client app;

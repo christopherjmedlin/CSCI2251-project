@@ -104,6 +104,11 @@ public class ProcessRequest implements Runnable {
     private void newRequest(PropertyQueries db) throws ClassNotFoundException, IOException {
         LOGGER.info("Processing a NEW property request.");
         String id = (String) in.readObject();
+
+        char propertyType = id.charAt(0);
+        if (propertyType != 'S' && propertyType != 'A' && propertyType != 'V')
+            sendError("Property ID must begin with S, A, or V (the property type)");
+
         try {
             db.newProperty(id);
             out.writeBoolean(true);

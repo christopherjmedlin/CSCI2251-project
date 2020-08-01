@@ -6,7 +6,11 @@
 
     <target name="compile">
         <mkdir dir="build/classes"/>
-        <javac srcdir="src" destdir="build/classes"/>
+        <javac srcdir="src" destdir="build/classes">
+            <classpath>
+                <pathelement path="lib/forms_rt.jar"/>
+            </classpath>
+        </javac>
     </target>
 
     <target name="jar" depends="compile">
@@ -42,11 +46,22 @@
     </target>
 
     <target name="runclient" depends="dist">
-        <java jar="build/dist/client/client.jar" fork="true"/>
+        <java classname="com.rentals.rentalmanager.client.ClientRun" fork="true">
+            <classpath>
+                <pathelement path="build/dist/client/client.jar"/>
+                <pathelement path="lib/forms_rt.jar"/>
+            </classpath>
+        </java>
     </target>
 
-    <target name="runserver" depends="jar">
-        <java jar="build/jar/server.jar" fork="true"/>
+    <target name="runserver" depends="dist">
+        <java classname="com.rentals.rentalmanager.server.Server" fork="true">
+            <classpath>
+                <pathelement path="build/dist/server/server.jar"/>
+                <pathelement path="lib/derby.jar"/>
+                <pathelement path="lib/derbyclient.jar"/>
+            </classpath>
+        </java>
     </target>
 
 </project>

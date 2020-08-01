@@ -1,14 +1,11 @@
 package com.rentals.rentalmanager.client;
 
-<<<<<<< Updated upstream
+import com.intellij.uiDesigner.core.GridConstraints;
+import com.intellij.uiDesigner.core.GridLayoutManager;
+import com.rentals.rentalmanager.common.PropertySearch;
 import com.rentals.rentalmanager.common.RentalProperty;
 import com.rentals.rentalmanager.common.RequestType;
 import com.rentals.rentalmanager.common.SingleHouse;
-=======
-import com.intellij.uiDesigner.core.GridConstraints;
-import com.intellij.uiDesigner.core.GridLayoutManager;
-import com.rentals.rentalmanager.common.*;
->>>>>>> Stashed changes
 import com.rentals.rentalmanager.server.ProcessRequest;
 import com.rentals.rentalmanager.server.db.PropertyQueries;
 
@@ -21,8 +18,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 
@@ -54,42 +51,21 @@ public class ClientGUI extends JFrame {
     private JButton generateStatementButton;
     private JButton addTenantButton;
     private JButton deletePropertyButton;
-    private JButton editTenantButton;
 
     //class variables
+    private String host;
     public String id;
     ArrayList<String> idList = new ArrayList<>();
     private int clicks = 0;
     private LocalDate localDate = now();
-<<<<<<< Updated upstream
-=======
-    DefaultListModel dlmProperty = new DefaultListModel();
-    DefaultListModel dlmTenant = new DefaultListModel();
-
->>>>>>> Stashed changes
-
     DefaultListModel dlm = new DefaultListModel();
 
-    //constructor
-    public ClientGUI() throws IOException {
+    private RentalProperty selectedProperty;
 
+    //constructor
+    public ClientGUI(String host) throws IOException {
         add(guiPanel);
         addTenantButton.setVisible(false);
-<<<<<<< Updated upstream
-
-        //Action listeners
-        addPropertyButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                System.out.println(idList.toString());
-
-                    try {
-                        addProperty();
-                    } catch (IOException ioException) {
-                        ioException.printStackTrace();
-                    }
-=======
-        editTenantButton.setVisible(false);
         this.host = host;
 
         //Action listeners
@@ -98,116 +74,47 @@ public class ClientGUI extends JFrame {
 
             try {
                 addProperty();
-            } catch (IOException | ClassNotFoundException ioException) {
+            } catch (IOException ioException) {
                 ioException.printStackTrace();
->>>>>>> Stashed changes
             }
         });
 
         //apply properties to property list
-        propertyList.setModel(dlmProperty);
+        propertyList.setModel(dlm);
 
-<<<<<<< Updated upstream
-        propertyList.addListSelectionListener(new ListSelectionListener() {
-            @Override
-            public void valueChanged(ListSelectionEvent e) {
+        propertyList.addListSelectionListener(e -> setDescription(id));
+
+        editPropertyButton.addActionListener(e -> {
+            //clicks allows function of button to alternate, when clicks is
+            // odd property is editable, when even properties are view only.
+            clicks++;
+
+            if (clicks % 2 == 0) {
+                setEditable(false);
                 try {
-=======
-        propertyList.addListSelectionListener(e -> {
+                    updateProperty();
+                } catch (Exception exc) {
+                    JOptionPane.showMessageDialog(guiPanel, "Error: " + exc.toString());
+                }
+            } else {
+                setEditable(true);
+            }
+        });
+
+        deletePropertyButton.addActionListener(e -> {
             try {
-                setDescription(id);
-                setTenantDescription();
+                removeFromList();
             } catch (IOException ioException) {
                 ioException.printStackTrace();
-            } catch (ClassNotFoundException classNotFoundException) {
-                classNotFoundException.printStackTrace();
-            }
-        });
->>>>>>> Stashed changes
-
-                    setDescription(id);
-
-                } catch (IOException ioException) {
-                    ioException.printStackTrace();
-                } catch (ClassNotFoundException classNotFoundException) {
-                    classNotFoundException.printStackTrace();
-                }
             }
         });
 
-        editPropertyButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                //clicks allows function of button to alternate, when clicks is
-                // odd property is editable, when even properties are view only.
-                // TODO send edited properties to dB
-                clicks++;
+        comboBox1.addActionListener(e -> search());
+        comboBox2.addActionListener(e -> search());
+        searchField.addActionListener(e -> search());
 
-                if (clicks % 2 == 0) {
-                    editPropertyButton.setText("Edit Property");
-
-                    try {
-
-                        setDescription(id);
-
-                    } catch (IOException ioException) {
-                        ioException.printStackTrace();
-                    } catch (ClassNotFoundException classNotFoundException) {
-                        classNotFoundException.printStackTrace();
-                    }
-
-                    addTenantButton.setVisible(false);
-
-                } else {
-                    editPropertyButton.setText("Save Information");
-                    try {
-                        editProperty();
-                    } catch (IOException ioException) {
-                        ioException.printStackTrace();
-                    } catch (ClassNotFoundException classNotFoundException) {
-                        classNotFoundException.printStackTrace();
-                    }
-                    addTenantButton.setVisible(true);
-                }
-            }
-        });
-
-        deletePropertyButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-
-<<<<<<< Updated upstream
-                try {
-                    removeFromList();
-                } catch (IOException ioException) {
-=======
         // populate with initial search
         this.search();
-
-        addTenantButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                try {
-                    addTenant();
-                } catch (IOException | ClassNotFoundException ioException) {
->>>>>>> Stashed changes
-                    ioException.printStackTrace();
-                }
-            }
-        });
-<<<<<<< Updated upstream
-=======
-
-        editTenantButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if(tenantList.getSelectedValue() != null) {
-                    testTenant();
-                }
-
-            }
-        });
->>>>>>> Stashed changes
     }
 
     public JPanel getGuiPanel() {
@@ -215,73 +122,30 @@ public class ClientGUI extends JFrame {
     }
 
     //prompts user for property ID and adds to property list
-<<<<<<< Updated upstream
     private void addProperty() throws IOException {
-        ClientControls cc = new ClientControls();
-=======
-    private void addProperty() throws IOException, ClassNotFoundException {
         ClientControls cc = new ClientControls(this, this.host);
->>>>>>> Stashed changes
 
-        String id = (String)JOptionPane.showInputDialog(
-               guiPanel, "Enter property ID", "Client",
-               JOptionPane.PLAIN_MESSAGE, null, null, null);
+        String newId = (String) JOptionPane.showInputDialog(
+                guiPanel, "Enter property ID", "Client",
+                JOptionPane.PLAIN_MESSAGE, null, null, null);
 
-        if (cc.idAlreadyExists(id) == true) {
-            JOptionPane.showMessageDialog(guiPanel,"Property with ID already exists.");
-
-        } else {
-            //add property to dB
-            cc.addNew(id);
-
+        // attempt to send NEW request to server
+        if (cc.addNew(newId)) {
             //add property to GUI list
-<<<<<<< Updated upstream
-            dlm.addElement(id);
-=======
-            dlmProperty.addElement(newId);
->>>>>>> Stashed changes
+            dlm.addElement(newId);
 
             //add ID of property to array of strings
-            idList.add(id);
+            idList.add(newId);
+            propertyList.setSelectedValue(newId, true);
+            setDescription(newId);
+        } else {
+            JOptionPane.showMessageDialog(guiPanel, cc.getErrorMessage());
         }
     }
 
-<<<<<<< Updated upstream
-    //sets fields and text panes to properties values
-    // TODO add unique values correlating to properties variables
-    private void setDescription(String id) throws IOException, ClassNotFoundException {
-        ClientControls cc = new ClientControls();
-
-        // sets title, but breaks deleteProperty for some reason.
-        //String selected = propertyList.getSelectedValue().toString();
-        //rightPanel.setBorder(BorderFactory.createTitledBorder("Property " + selected + " description"));
-
-
-        if (cc.idAlreadyExists(id) == true) {
-
-            rentField.setText("");
-            rentField.setEditable(false);
-            balanceField.setText("");
-            balanceField.setEditable(false);
-            moveInDateField.setText("");
-            moveInDateField.setEditable(false);
-            descriptionPane.setText("");
-            descriptionPane.setEditable(false);
-        } else {
-
-            String data = "" + (propertyList.getSelectedIndex() + 1);
-
-            rentField.setText(data);
-            rentField.setEditable(false);
-            balanceField.setText(data);
-            balanceField.setEditable(false);
-            moveInDateField.setText(data);
-            moveInDateField.setEditable(false);
-            descriptionPane.setText("property #" + data);
-            descriptionPane.setEditable(false);
-=======
     // sets fields and text panes to selected property's values
-    private void setDescription(String id) throws IOException, ClassNotFoundException {
+    // TODO add unique values correlating to properties variables
+    private void setDescription(String id) {
         // retrieve property from server
         RentalProperty property = null;
         id = (String) this.propertyList.getSelectedValue();
@@ -294,18 +158,17 @@ public class ClientGUI extends JFrame {
             e.printStackTrace();
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
->>>>>>> Stashed changes
         }
 
+        this.selectedProperty = property;
+        rentField.setText(Double.toString(property.getPrice()));
+        balanceField.setText(Double.toString(property.getBalance()));
+        moveInDateField.setText(property.getMoveInDate().toString());
+        descriptionPane.setText(property.getDescription());
     }
 
     //sets fields to editable, need to send results to dB
-<<<<<<< Updated upstream
     // TODO update values with text entered in field
-    public void editProperty() throws IOException, ClassNotFoundException {
-        ClientControls cc = new ClientControls();
-        id = propertyList.getSelectedValue().toString();
-=======
     public void updateProperty() throws IOException, ClassNotFoundException {
         try {
             this.selectedProperty.setBalance(Double.valueOf(balanceField.getText()));
@@ -313,18 +176,19 @@ public class ClientGUI extends JFrame {
         } catch (NumberFormatException e) {
             JOptionPane.showMessageDialog(guiPanel, "Invalid number for rent and/or balance.");
         }
->>>>>>> Stashed changes
 
-        rentField.setEditable(true);
-        balanceField.setEditable(true);
-        moveInDateField.setEditable(true);
-        descriptionPane.setEditable(true);
+        try {
+            this.selectedProperty.setMoveIn(LocalDate.parse(this.moveInDateField.getText()));
+        } catch (DateTimeParseException e) {
+            JOptionPane.showMessageDialog(guiPanel, "Invalid move in date.");
+        }
+        this.selectedProperty.setDescription(descriptionPane.getText());
 
-        cc.updateProperty(id);
+        ClientControls cc = new ClientControls(this, this.host);
+        if (!cc.updateProperty(this.selectedProperty))
+            JOptionPane.showMessageDialog(guiPanel, "Unexpected server error.");
+    }
 
-<<<<<<< Updated upstream
-
-=======
     private void setEditable(boolean editable) {
         editPropertyButton.setText(editable ? "Save Information" : "Edit Property");
         rentField.setEditable(editable);
@@ -332,7 +196,6 @@ public class ClientGUI extends JFrame {
         moveInDateField.setEditable(editable);
         descriptionPane.setEditable(editable);
         addTenantButton.setVisible(editable);
-        editTenantButton.setVisible(editable);
     }
 
     private void search() {
@@ -360,87 +223,148 @@ public class ClientGUI extends JFrame {
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
-        dlmProperty.clear();
-        dlmProperty.addAll(ids);
->>>>>>> Stashed changes
+        dlm.clear();
+        dlm.addAll(ids);
     }
 
     private void removeFromList() throws IOException {
-        ClientControls cc = new ClientControls();
+        ClientControls cc = new ClientControls(this, this.host);
         id = propertyList.getSelectedValue().toString();
 
         int selectedIndex = propertyList.getSelectedIndex();
 
-<<<<<<< Updated upstream
-        if( selectedIndex !=1) {
-            dlm.remove(selectedIndex);
-=======
         if (selectedIndex != 1) {
-            dlmProperty.remove(selectedIndex);
->>>>>>> Stashed changes
+            dlm.remove(selectedIndex);
         }
+
         cc.deleteProperty(id);
-<<<<<<< Updated upstream
 
     }
-=======
+
+    {
+// GUI initializer generated by IntelliJ IDEA GUI Designer
+// >>> IMPORTANT!! <<<
+// DO NOT EDIT OR ADD ANY CODE HERE!
+        $$$setupUI$$$();
     }
 
-    public void addTenant() throws IOException, ClassNotFoundException {
-        ClientControls cc = new ClientControls(this, this.host);
-        id = propertyList.getSelectedValue().toString();
-        String name = "";
+    /**
+     * Method generated by IntelliJ IDEA GUI Designer
+     * >>> IMPORTANT!! <<<
+     * DO NOT edit this method OR call it in your code!
+     *
+     * @noinspection ALL
+     */
+    private void $$$setupUI$$$() {
+        guiPanel = new JPanel();
+        guiPanel.setLayout(new GridLayoutManager(1, 1, new Insets(0, 0, 0, 0), -1, -1));
+        guiPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createRaisedBevelBorder(), null, TitledBorder.DEFAULT_JUSTIFICATION, TitledBorder.DEFAULT_POSITION, null, null));
+        splitPane = new JSplitPane();
+        splitPane.setOneTouchExpandable(true);
+        guiPanel.add(splitPane, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, new Dimension(200, 200), null, 0, false));
+        splitPane.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEmptyBorder(), null, TitledBorder.DEFAULT_JUSTIFICATION, TitledBorder.DEFAULT_POSITION, null, null));
+        leftPanel = new JPanel();
+        leftPanel.setLayout(new GridLayoutManager(4, 2, new Insets(0, 0, 0, 0), -1, -1));
+        splitPane.setLeftComponent(leftPanel);
+        leftPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createRaisedBevelBorder(), null, TitledBorder.DEFAULT_JUSTIFICATION, TitledBorder.DEFAULT_POSITION, null, null));
+        searchLabel = new JLabel();
+        searchLabel.setText("Search properties:");
+        leftPanel.add(searchLabel, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        searchField = new JTextField();
+        leftPanel.add(searchField, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
+        scrollPane = new JScrollPane();
+        leftPanel.add(scrollPane, new GridConstraints(2, 0, 1, 2, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
+        propertyList = new JList();
+        scrollPane.setViewportView(propertyList);
+        comboBox1 = new JComboBox();
+        final DefaultComboBoxModel defaultComboBoxModel1 = new DefaultComboBoxModel();
+        defaultComboBoxModel1.addElement("No Tenants");
+        defaultComboBoxModel1.addElement("Tenants");
+        comboBox1.setModel(defaultComboBoxModel1);
+        leftPanel.add(comboBox1, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        comboBox2 = new JComboBox();
+        final DefaultComboBoxModel defaultComboBoxModel2 = new DefaultComboBoxModel();
+        defaultComboBoxModel2.addElement("Due Date Approaching");
+        defaultComboBoxModel2.addElement("Past Due");
+        defaultComboBoxModel2.addElement("N/A");
+        comboBox2.setModel(defaultComboBoxModel2);
+        leftPanel.add(comboBox2, new GridConstraints(1, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        deletePropertyButton = new JButton();
+        deletePropertyButton.setText("Delete Property");
+        leftPanel.add(deletePropertyButton, new GridConstraints(3, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        addPropertyButton = new JButton();
+        addPropertyButton.setText("Add Property");
+        leftPanel.add(addPropertyButton, new GridConstraints(3, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        rightPanel = new JPanel();
+        rightPanel.setLayout(new GridLayoutManager(7, 3, new Insets(0, 0, 0, 0), -1, -1));
+        splitPane.setRightComponent(rightPanel);
+        tenInfoLabel = new JLabel();
+        Font tenInfoLabelFont = this.$$$getFont$$$(null, -1, 12, tenInfoLabel.getFont());
+        if (tenInfoLabelFont != null) tenInfoLabel.setFont(tenInfoLabelFont);
+        tenInfoLabel.setText("Tenant Information");
+        rightPanel.add(tenInfoLabel, new GridConstraints(4, 0, 1, 3, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        frontyardLabel = new JLabel();
+        frontyardLabel.setText("Balance:");
+        rightPanel.add(frontyardLabel, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        garageLabel = new JLabel();
+        garageLabel.setText("Rent:");
+        rightPanel.add(garageLabel, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        editPropertyButton = new JButton();
+        editPropertyButton.setText("Edit Property");
+        rightPanel.add(editPropertyButton, new GridConstraints(6, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        tenantList = new JList();
+        final DefaultListModel defaultListModel1 = new DefaultListModel();
+        tenantList.setModel(defaultListModel1);
+        rightPanel.add(tenantList, new GridConstraints(5, 0, 1, 3, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_WANT_GROW, null, new Dimension(150, 50), null, 0, false));
+        descriptionPane = new JTextPane();
+        descriptionPane.setEditable(false);
+        descriptionPane.setText("Property description string will be displayed here");
+        rightPanel.add(descriptionPane, new GridConstraints(3, 0, 1, 3, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_WANT_GROW, null, new Dimension(150, 50), null, 0, false));
+        generateStatementButton = new JButton();
+        generateStatementButton.setText("Generate Statement");
+        rightPanel.add(generateStatementButton, new GridConstraints(6, 2, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        addTenantButton = new JButton();
+        addTenantButton.setText("Add Tenant");
+        rightPanel.add(addTenantButton, new GridConstraints(6, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        rentField = new JTextField();
+        rentField.setEditable(false);
+        rightPanel.add(rentField, new GridConstraints(0, 2, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
+        balanceField = new JTextField();
+        balanceField.setEditable(false);
+        balanceField.setText("");
+        rightPanel.add(balanceField, new GridConstraints(1, 2, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
+        moveInDateField = new JTextField();
+        moveInDateField.setEditable(false);
+        rightPanel.add(moveInDateField, new GridConstraints(2, 2, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
+        final JLabel label1 = new JLabel();
+        label1.setText("Move in date:");
+        rightPanel.add(label1, new GridConstraints(2, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+    }
 
-        //dialog box with two text fields
-        JTextField firstNameField = new JTextField(8);
-        JTextField lastNameField = new JTextField(8);
-
-        JPanel tenantPrompt = new JPanel();
-        tenantPrompt.add(new JLabel("First name:"));
-        tenantPrompt.add(firstNameField);
-        tenantPrompt.add(Box.createHorizontalStrut(15));
-        tenantPrompt.add(new JLabel("Last name:"));
-        tenantPrompt.add(lastNameField);
-
-        int result = JOptionPane.showConfirmDialog(null, tenantPrompt, "Enter Tenant's First and Last Name",
-                JOptionPane.OK_CANCEL_OPTION);
-
-        if (!((firstNameField.getText()) == null) & !((lastNameField.getText()) == null)) {
-            if (result == JOptionPane.OK_OPTION) {
-                String firstName = firstNameField.getText();
-                String lastName = lastNameField.getText();
-                name = firstName + " " + lastName;
-                cc.addNewTenant(id, name);
+    /**
+     * @noinspection ALL
+     */
+    private Font $$$getFont$$$(String fontName, int style, int size, Font currentFont) {
+        if (currentFont == null) return null;
+        String resultName;
+        if (fontName == null) {
+            resultName = currentFont.getName();
+        } else {
+            Font testFont = new Font(fontName, Font.PLAIN, 10);
+            if (testFont.canDisplay('a') && testFont.canDisplay('1')) {
+                resultName = fontName;
             } else {
-                JOptionPane.showMessageDialog(tenantPrompt, "Both fields must filled before adding a tenant.");
+                resultName = currentFont.getName();
             }
         }
+        return new Font(resultName, style >= 0 ? style : currentFont.getStyle(), size >= 0 ? size : currentFont.getSize());
     }
 
-    // TODO Update tenant list when new tenant is added & edited
-    public void setTenantDescription() throws IOException, ClassNotFoundException {
-       ClientControls cc = new ClientControls(this, this.host);
-
-       String[] tenants = this.selectedProperty.getTenantNames();
-       boolean hasTenants = cc.hasTenant(this.selectedProperty);
-
-       //important to repaint jList, duplicates tenants without this
-       dlmTenant.removeAllElements();
-
-       if(hasTenants) {
-           for (int i = 0; i < tenants.length; i++) {
-               dlmTenant.addElement(tenants[i]);
-               tenantList.setModel(dlmTenant);
-           }
-       }
+    /**
+     * @noinspection ALL
+     */
+    public JComponent $$$getRootComponent$$$() {
+        return guiPanel;
     }
 
-    public void testTenant() {
-        Tenant tenant;
-        tenant = this.selectedProperty.getTenant(tenantList.getSelectedValue().toString());
-        EditTenant et = new EditTenant(tenant);
-    }
-
->>>>>>> Stashed changes
 }
-

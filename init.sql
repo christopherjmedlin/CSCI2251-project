@@ -5,7 +5,7 @@ CREATE TABLE properties (
     balance FLOAT,
     price FLOAT,
     moveIn DATE,
-    hasTenants INT,
+    hasTenants INT DEFAULT 0,
     description VARCHAR(500),
     PRIMARY KEY (id)
 );

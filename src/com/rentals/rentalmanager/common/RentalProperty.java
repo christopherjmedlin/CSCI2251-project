@@ -49,10 +49,7 @@ public abstract class RentalProperty implements Serializable {
         LocalDate dueDate = this.nextDueDate();
         Period per = Period.between(LocalDate.now(), dueDate);
         // TODO make this configurable as something other than a week.
-        if (per.getDays() >= 7) {
-            return true;
-        }
-        return false;
+        return per.getDays() <= 7;
     }
 
     /**
@@ -88,6 +85,22 @@ public abstract class RentalProperty implements Serializable {
 
     public String getDescription() {
         return description;
+    }
+
+    public void setBalance(double balance) {
+        this.balance = balance;
+    }
+
+    public void setPrice(double price) {
+        this.price = price;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public void setMoveIn(LocalDate moveIn) {
+        this.moveIn = moveIn;
     }
 
     /**

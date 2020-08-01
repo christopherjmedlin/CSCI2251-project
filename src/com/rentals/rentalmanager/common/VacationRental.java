@@ -1,6 +1,7 @@
 package com.rentals.rentalmanager.common;
 
 import java.time.LocalDate;
+import java.time.Period;
 
 public class VacationRental extends RentalProperty {
     // 1 for daily, 2 for monthly, 3 for yearly
@@ -14,19 +15,34 @@ public class VacationRental extends RentalProperty {
 
     @Override
     protected int dueDatesSinceMoveIn() {
-        return 0;
+        // initialize to 1 to include the initial payment
+        int dueDates = 1;
+        Period duration = this.rentalPeriod();
+        switch (this.paymentType) {
+            case 1:
+                dueDates += duration.getDays();
+            case 2:
+                dueDates += duration.getMonths();
+            case 3:
+                dueDates += duration.getYears();
+        }
+
+        return dueDates;
     }
 
     @Override
     protected LocalDate nextDueDate() {
         LocalDate dueDate = this.getMoveInDate();
         // continue incrementing days, months, or years until the due date is after the current date.
-        while (this.getMoveInDate().isAfter(LocalDate.now())) {
+        LocalDate currentDate = LocalDate.now();
+        while (currentDate.isAfter(dueDate)) {
             switch (this.paymentType) {
                 case 1:
                     dueDate = dueDate.plusDays(1);
+                    break;
                 case 2:
                     dueDate = dueDate.plusMonths(1);
+                    break;
                 case 3:
                     dueDate = dueDate.plusYears(1);
             }

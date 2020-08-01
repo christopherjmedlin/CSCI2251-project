@@ -52,7 +52,7 @@ public class PropertyQueries {
             // create new property with user-defined id, with everything else empty
             this.newProperty = this.db.prepareStatement(
                     "INSERT INTO properties " +
-                       "(id, moveIn) VALUES (?, ?)"
+                       "(id, moveIn, description) VALUES (?, ?, '')"
             );
 
             this.deleteProperty = this.db.prepareStatement(
@@ -111,7 +111,6 @@ public class PropertyQueries {
      */
     public List<String> search(PropertySearch s) {
         LOGGER.info("Performing search request.");
-        PreparedStatement statement = null;
         List<RentalProperty> properties = new ArrayList<>();
 
         // attempt to just search for a specific property by ID
@@ -126,8 +125,10 @@ public class PropertyQueries {
         try {
             // set first parameter, hasTenants
             this.propertiesByVacancyAndString.setInt(1, s.hasTenants ? 1 : 0);
-            // set second parameter, the description search
-            this.propertiesByVacancyAndString.setString(2, s.search);
+            // set second parameter, the description
+            // if it's empty, just set it to %, which will match anything. otherwise, it should be %search%, which
+            // will check if the keyword(s) is present in the description.
+            this.propertiesByVacancyAndString.setString(2, s.search.isEmpty() ? "%" : "%" + s.search + "%");
         } catch (SQLException e) {
             LOGGER.severe(e.toString());
         }

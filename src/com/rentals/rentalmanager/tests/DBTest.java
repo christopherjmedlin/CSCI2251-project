@@ -17,18 +17,16 @@ public class DBTest {
     // store a property so it can be used in tenant query testing
     private static RentalProperty testProperty;
 
-    public static void main(String[] args) throws SQLException {
+    public static void main(String[] args) {
         PropertyQueries queries = new PropertyQueries(args[0], args[1]);
         testNewProperty(queries);
-        testGetAllProperties(queries);
         testGetPropertyById(queries);
         testUpdateProperty(queries);
-        testSearch(queries);
         testDelete(queries);
-        queries.close();
-        TenantQueries queries2 = new TenantQueries(args[0], args[1]);
+        TenantQueries queries2 = new TenantQueries(queries.getConnection());
         testNewTenant(queries2);
         testGetTenantsForProperty(queries2);
+        testSearch(queries);
     }
 
     // upon running this the second time, exceptions will be logged by PropertyQueries regarding
@@ -42,15 +40,6 @@ public class DBTest {
             LOGGER.info("test properties already made");
         }
         LOGGER.info("testNewProperty passed.");
-    }
-
-    private static void testGetAllProperties(PropertyQueries queries) {
-        List<String> properties = queries.getAllPropertyIds();
-        assert properties.size() >= 3;
-        assert properties.get(0).equals("AABQ12-321");
-        assert properties.get(1).equals("SABQ452");
-        assert properties.get(2).equals("VABQ123");
-        LOGGER.info("testGetAllProperties passed.");
     }
 
     private static void testGetPropertyById(PropertyQueries queries) {
@@ -72,15 +61,6 @@ public class DBTest {
         assert updatedProperty.getDescription().equals("it's a house");
         assert updatedProperty.getMoveInDate().getDayOfMonth() == 3;
         LOGGER.info("testUpdateProperty passed.");
-    }
-
-    private static void testSearch(PropertyQueries queries) {
-        // test searching by id
-        List<String> l = queries.search(new PropertySearch("AABQ12-321", 0, true));
-        assert l.size() == 1;
-        assert l.get(0).equals("AABQ12-321");
-
-        LOGGER.info("testSearch passed.");
     }
 
     private static void testDelete(PropertyQueries queries) {
@@ -105,5 +85,19 @@ public class DBTest {
         assert testProperty.getTenant("Don Joe") != null;
         assert testProperty.getTenant("John Doe") != null;
         LOGGER.info("testGetTenantsForProperty passed.");
+    }
+
+    private static void testSearch(PropertyQueries queries) {
+        // test searching by id
+        List<String> l = queries.search(new PropertySearch("AABQ12-321", 0, true));
+        assert l.size() == 1;
+        assert l.get(0).equals("AABQ12-321");
+
+        // searching by description
+        l = queries.search(new PropertySearch("VABQ12345", 0, true));
+        assert l.size() == 1;
+        assert l.get(0).equals("VABQ123");
+
+        LOGGER.info("testSearch passed.");
     }
 }
