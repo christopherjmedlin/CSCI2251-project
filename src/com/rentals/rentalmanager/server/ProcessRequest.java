@@ -3,6 +3,7 @@ package com.rentals.rentalmanager.server;
 import com.rentals.rentalmanager.common.PropertySearch;
 import com.rentals.rentalmanager.common.RentalProperty;
 import com.rentals.rentalmanager.common.RequestType;
+import com.rentals.rentalmanager.common.Tenant;
 import com.rentals.rentalmanager.server.db.PropertyQueries;
 import com.rentals.rentalmanager.server.db.TenantQueries;
 

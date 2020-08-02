@@ -1,6 +1,8 @@
 package com.rentals.rentalmanager.common;
 
-public class Tenant {
+import java.io.Serializable;
+
+public class Tenant implements Serializable {
 
     private int id;
     private String firstName;
