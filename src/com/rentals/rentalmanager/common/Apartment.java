@@ -2,6 +2,7 @@ package com.rentals.rentalmanager.common;
 
 import java.time.LocalDate;
 import java.time.Period;
+import java.time.temporal.ChronoUnit;
 
 public class Apartment extends RentalProperty {
     // Apartment can start out with 3, 6, or 12 months before going monthly.
@@ -19,18 +20,18 @@ public class Apartment extends RentalProperty {
         // Apartment starts with 3/6/12 months, then monthly.
         // initialize to 1 to include the initial payment
         int dueDates = 1;
-        Period duration = this.rentalPeriod();
+        LocalDate now = LocalDate.now();
 
         // if it has been more than the chosen start period (3 months, 6 months, or 12 months)
-        if (duration.getMonths() > this.start) {
-            // subtract those months from the period
-            duration = duration.minusMonths(this.start);
+        if (ChronoUnit.MONTHS.between(getMoveInDate(), now) > this.start) {
+            // subtract those months from the date
+            now = now.minusMonths(this.start);
             dueDates++;
         } else {
             return dueDates;
         }
         // add the remaining months
-        dueDates += duration.getMonths();
+        dueDates += ChronoUnit.MONTHS.between(getMoveInDate(), now);
 
         return dueDates;
     }

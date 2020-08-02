@@ -42,26 +42,6 @@ public abstract class RentalProperty implements Serializable {
      */
     public abstract LocalDate nextDueDate();
 
-    /**
-     * Helper method for calculating the duration between the move-in date and the current date
-     * (intended to be used by subclasses)
-     */
-    protected Period rentalPeriod() {
-        LocalDate date = this.getMoveInDate();
-        Period period;
-        if (endOfMonth) {
-            period = Period.between(date.withDayOfMonth(date.lengthOfMonth()), LocalDate.now());
-        } else {
-            period = Period.between(date, LocalDate.now());
-        }
-
-        if (period.isNegative()) {
-            // if it's negative, just return a period with no time.
-            return Period.of(0,0,0);
-        }
-        return period;
-    }
-
     public boolean dueDateApproaching() {
         LocalDate dueDate = this.nextDueDate();
         if (endOfMonth)

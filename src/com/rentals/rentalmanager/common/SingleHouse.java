@@ -3,6 +3,7 @@ package com.rentals.rentalmanager.common;
 import java.time.Period;
 import java.time.LocalDate;
 import java.time.Month;
+import java.time.temporal.ChronoUnit;
 
 public class SingleHouse extends RentalProperty {
 
@@ -21,18 +22,18 @@ public class SingleHouse extends RentalProperty {
         // SingleHouse starts yearly, then monthly.
         // initialize to 1 to include the initial payment
         int dueDates = 1;
-        Period duration = this.rentalPeriod();
+        LocalDate now = LocalDate.now();
 
         // if it has at least been a year
-        if (duration.getYears() >= 1) {
-            // subtract that year from the period
-            duration = duration.minusYears(1);
+        if (ChronoUnit.YEARS.between(getMoveInDate(), now) >= 1) {
+            // subtract that year from the date
+            now = now.minusYears(1);
             dueDates++;
         } else {
             return dueDates;
         }
         // add the remaining months
-        dueDates += duration.getMonths();
+        dueDates += ChronoUnit.MONTHS.between(getMoveInDate(), now);
 
         return dueDates;
     }
