@@ -3,13 +3,9 @@ package com.rentals.rentalmanager.client;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.rentals.rentalmanager.common.*;
-import com.rentals.rentalmanager.server.ProcessRequest;
-import com.rentals.rentalmanager.server.db.PropertyQueries;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -30,7 +26,7 @@ public class ClientGUI extends JFrame {
     private JPanel rightPanel;
     private JTextField searchField;
     private JTextField rentField;
-    public JList propertyList;
+    public JList<String> propertyList;
     JButton addPropertyButton;
     private JButton editPropertyButton;
     private JLabel searchLabel;
@@ -39,11 +35,11 @@ public class ClientGUI extends JFrame {
     private JLabel tenInfoLabel;
     private JLabel frontyardLabel;
     private JLabel garageLabel;
-    private JList tenantList;
+    private JList<String> tenantList;
     private JTextPane descriptionPane;
     private JTextField moveInDateField;
-    private JComboBox comboBox1;
-    private JComboBox comboBox2;
+    private JComboBox<String> comboBox1;
+    private JComboBox<String> comboBox2;
     private JButton generateStatementButton;
     private JButton addTenantButton;
     private JButton deletePropertyButton;
@@ -59,8 +55,8 @@ public class ClientGUI extends JFrame {
     private int clicks = 0;
     private LocalDate localDate = now();
 
-    DefaultListModel dlmProperty = new DefaultListModel();
-    DefaultListModel dlmTenant = new DefaultListModel();
+    DefaultListModel<String> dlmProperty = new DefaultListModel<>();
+    DefaultListModel<String> dlmTenant = new DefaultListModel<String>();
 
 
     private RentalProperty selectedProperty;
@@ -190,15 +186,13 @@ public class ClientGUI extends JFrame {
     private void setDescription(String id) {
         // retrieve property from server
         RentalProperty property = null;
-        id = (String) this.propertyList.getSelectedValue();
+        id = this.propertyList.getSelectedValue();
 
         try {
             ClientControls cc = new ClientControls(this, this.host);
             property = cc.getProperty(id);
             if (property == null) return;
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (ClassNotFoundException e) {
+        } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
         }
 
@@ -213,7 +207,7 @@ public class ClientGUI extends JFrame {
     //sets fields to editable, need to send results to dB
     public void updateProperty() throws IOException, ClassNotFoundException {
         try {
-            this.selectedProperty.setPrice(Double.valueOf(rentField.getText()));
+            this.selectedProperty.setPrice(Double.parseDouble(rentField.getText()));
         } catch (NumberFormatException e) {
             JOptionPane.showMessageDialog(guiPanel, "Invalid number for rent and/or balance.");
         }
@@ -273,9 +267,7 @@ public class ClientGUI extends JFrame {
         List<String> ids = new ArrayList<>(0);
         try {
             ids = new ClientControls(this, this.host).search(searchParameters);
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (ClassNotFoundException e) {
+        } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
         }
         dlmProperty.clear();
