@@ -23,8 +23,10 @@ public class VacationRental extends RentalProperty {
         switch (this.paymentType) {
             case 1:
                 dueDates += duration.getDays();
+                break;
             case 2:
                 dueDates += duration.getMonths();
+                break;
             case 3:
                 dueDates += duration.getYears();
         }

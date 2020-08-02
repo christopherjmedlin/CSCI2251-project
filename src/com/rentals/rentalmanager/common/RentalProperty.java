@@ -59,7 +59,7 @@ public abstract class RentalProperty implements Serializable {
             // if it's negative, just return a period with no time.
             return Period.of(0,0,0);
         }
-        return Period.between(date, LocalDate.now());
+        return period;
     }
 
     public boolean dueDateApproaching() {
