@@ -68,20 +68,21 @@ import java.io.IOException;
             container.add(deleteTenant);
 
             save.addActionListener(e -> {
-                setTenantInfo(tenant);
+                try {
+                    setTenantInfo(tenant);
+                } catch (IOException ioException) {
+                    ioException.printStackTrace();
+                }
                 super.dispose();
             });
-
             setVisible(true);
-
         }
 
-        public void setTenantInfo(Tenant tenant) {
+        public void setTenantInfo(Tenant tenant) throws IOException {
             tenant.setFirstName(firstName.getText());
             tenant.setLastName(lastName.getText());
             tenant.setEmail(email.getText());
             tenant.setPhone(phone.getText());
-
         }
 
 }

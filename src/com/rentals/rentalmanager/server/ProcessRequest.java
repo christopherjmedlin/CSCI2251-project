@@ -3,6 +3,7 @@ package com.rentals.rentalmanager.server;
 import com.rentals.rentalmanager.common.PropertySearch;
 import com.rentals.rentalmanager.common.RentalProperty;
 import com.rentals.rentalmanager.common.RequestType;
+import com.rentals.rentalmanager.common.Tenant;
 import com.rentals.rentalmanager.server.db.PropertyQueries;
 import com.rentals.rentalmanager.server.db.TenantQueries;
 
@@ -162,7 +163,6 @@ public class ProcessRequest implements Runnable {
         String name = (String) in.readObject();
         new TenantQueries(db.getConnection()).newTenant(propertyId, name);
         out.writeBoolean(true);
-        LOGGER.info("Tenant added to property.");
     }
 
     // handles a request to delete a tenant

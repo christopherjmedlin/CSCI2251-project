@@ -87,13 +87,11 @@ public class ClientGUI extends JFrame {
         propertyList.setModel(dlmProperty);
 
         propertyList.addListSelectionListener(e -> {
+            setDescription(id);
             try {
-                setDescription(id);
                 setTenantDescription();
             } catch (IOException ioException) {
                 ioException.printStackTrace();
-            } catch (ClassNotFoundException classNotFoundException) {
-                classNotFoundException.printStackTrace();
             }
         });
 
@@ -104,13 +102,19 @@ public class ClientGUI extends JFrame {
 
             if (clicks % 2 == 0) {
                 setEditable(false);
+                splitPane.getLeftComponent().setMinimumSize(new Dimension());
+                splitPane.setDividerLocation(0.5d);
                 try {
                     updateProperty();
+                    setDescription(id);
+                    setTenantDescription();
                 } catch (Exception exc) {
                     JOptionPane.showMessageDialog(guiPanel, "Error: " + exc.toString());
                 }
             } else {
                 setEditable(true);
+                splitPane.getLeftComponent().setMinimumSize(new Dimension());
+                splitPane.setDividerLocation(0.0d);
             }
         });
 
@@ -127,8 +131,8 @@ public class ClientGUI extends JFrame {
             public void actionPerformed(ActionEvent e) {
                 try {
                     addTenant();
-                } catch (IOException | ClassNotFoundException ioException) {
-                    ioException.printStackTrace();
+                } catch (IOException ioe) {
+                    ioe.printStackTrace();
                 }
             }
         });
@@ -178,7 +182,6 @@ public class ClientGUI extends JFrame {
     }
 
     // sets fields and text panes to selected property's values
-    // TODO add unique values correlating to properties variables
     private void setDescription(String id) {
         // retrieve property from server
         RentalProperty property = null;
@@ -202,7 +205,6 @@ public class ClientGUI extends JFrame {
     }
 
     //sets fields to editable, need to send results to dB
-    // TODO update values with text entered in field
     public void updateProperty() throws IOException, ClassNotFoundException {
         try {
             this.selectedProperty.setBalance(Double.valueOf(balanceField.getText()));
@@ -221,6 +223,10 @@ public class ClientGUI extends JFrame {
         ClientControls cc = new ClientControls(this, this.host);
         if (!cc.updateProperty(this.selectedProperty))
             JOptionPane.showMessageDialog(guiPanel, "Unexpected server error.");
+
+        if (this.selectedProperty.hasTenants()) {
+            setTenantDescription();
+        }
     }
 
     private void setEditable(boolean editable) {
@@ -276,39 +282,14 @@ public class ClientGUI extends JFrame {
 
     }
 
-    public void addTenant() throws IOException, ClassNotFoundException {
+    public void addTenant() throws IOException {
         ClientControls cc = new ClientControls(this, this.host);
         id = propertyList.getSelectedValue().toString();
-        String name = "";
-
-        //dialog box with two text fields
-        JTextField firstNameField = new JTextField(8);
-        JTextField lastNameField = new JTextField(8);
-
-        JPanel tenantPrompt = new JPanel();
-        tenantPrompt.add(new JLabel("First name:"));
-        tenantPrompt.add(firstNameField);
-        tenantPrompt.add(Box.createHorizontalStrut(15));
-        tenantPrompt.add(new JLabel("Last name:"));
-        tenantPrompt.add(lastNameField);
-
-        int result = JOptionPane.showConfirmDialog(null, tenantPrompt, "Enter Tenant's First and Last Name",
-                JOptionPane.OK_CANCEL_OPTION);
-
-        // if (!((firstNameField.getText()) == null) & !((lastNameField.getText()) == null)) {
-        if (result == JOptionPane.OK_OPTION) {
-            String firstName = firstNameField.getText();
-            String lastName = lastNameField.getText();
-            name = firstName + " " + lastName;
-            cc.addNewTenant(id, name);
-        } else {
-            JOptionPane.showMessageDialog(tenantPrompt, "Both fields must filled before adding a tenant.");
-        }
+        AddTenant addWindow = new AddTenant(id);
     }
 
-
-    // TODO Update tenant list when new tenant is added & edited
-    public void setTenantDescription() throws IOException, ClassNotFoundException {
+    // TODO Add phone & email to JList
+    private void setTenantDescription() throws IOException {
         ClientControls cc = new ClientControls(this, this.host);
 
         String[] tenants = this.selectedProperty.getTenantNames();
@@ -319,15 +300,15 @@ public class ClientGUI extends JFrame {
 
         if (hasTenants) {
             for (int i = 0; i < tenants.length; i++) {
+
                 dlmTenant.addElement(tenants[i]);
                 tenantList.setModel(dlmTenant);
             }
         }
     }
 
-    public void testTenant() {
-        Tenant tenant;
-        tenant = this.selectedProperty.getTenant(tenantList.getSelectedValue().toString());
+    private void testTenant() {
+        Tenant tenant = this.selectedProperty.getTenant(tenantList.getSelectedValue().toString());
         EditTenant et = new EditTenant(tenant);
     }
 

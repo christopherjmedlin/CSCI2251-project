@@ -19,7 +19,6 @@ public class ClientControls {
     ObjectOutputStream outputStream;
     ObjectInputStream inputStream;
 
-
     public ClientControls(ClientGUI gui, String server) throws IOException {
         this.server = server;
         this.gui = gui;
@@ -126,15 +125,6 @@ public class ClientControls {
             return true;
         } else
             return false;
-    }
-
-    public String[] getTenants(String id) throws IOException, ClassNotFoundException {
-        connect();
-        RentalProperty property = getProperty(id);
-        String[] tenants = property.getTenantNames();
-
-        return tenants;
-
     }
 
     public List<String> search(PropertySearch s) throws IOException, ClassNotFoundException {
