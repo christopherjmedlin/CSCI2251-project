@@ -31,16 +31,16 @@ public abstract class RentalProperty implements Serializable {
         this.tenants = new HashMap<>();
     }
 
-        /**
-         * Calculates number of due dates that have passed from the initial move-in date
-         * to the current date.
-         */
+    /**
+     * Calculates number of due dates that have passed from the initial move-in date
+     * to the current date.
+     */
     protected abstract int dueDatesSinceMoveIn();
 
     /**
      * Returns the next due date based on the current date.
      */
-    protected abstract LocalDate nextDueDate();
+    public abstract LocalDate nextDueDate();
 
     /**
      * Helper method for calculating the duration between the move-in date and the current date
@@ -156,6 +156,13 @@ public abstract class RentalProperty implements Serializable {
      */
     public String[] getTenantNames() {
         return this.tenants.keySet().toArray(new String[tenants.size()]);
+    }
+
+    /**
+     * Subtracts the amount that should be payed from the balance.
+     */
+    public double calculateBalance() {
+        return this.balance - (this.price * dueDatesSinceMoveIn());
     }
 
     @Override

@@ -36,7 +36,7 @@ public class Apartment extends RentalProperty {
     }
 
     @Override
-    protected LocalDate nextDueDate() {
+    public LocalDate nextDueDate() {
         // begin by adding the start period
         LocalDate dueDate = this.getMoveInDate().plusMonths(this.start);
         // continue incrementing months until the dueDate is past the current date

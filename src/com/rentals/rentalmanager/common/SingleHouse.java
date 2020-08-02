@@ -38,7 +38,7 @@ public class SingleHouse extends RentalProperty {
     }
 
     @Override
-    protected LocalDate nextDueDate() {
+    public LocalDate nextDueDate() {
         // begin by adding a year
         LocalDate dueDate = this.getMoveInDate().plusYears(1);
         // continue incrementing months until the dueDate is past the current date

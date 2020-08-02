@@ -33,7 +33,7 @@ public class VacationRental extends RentalProperty {
     }
 
     @Override
-    protected LocalDate nextDueDate() {
+    public LocalDate nextDueDate() {
         LocalDate dueDate = this.getMoveInDate();
         // continue incrementing days, months, or years until the due date is after the current date.
         LocalDate currentDate = LocalDate.now();
