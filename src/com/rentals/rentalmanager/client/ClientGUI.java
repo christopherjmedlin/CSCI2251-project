@@ -302,7 +302,7 @@ public class ClientGUI extends JFrame {
     public void addTenant() throws IOException {
         ClientControls cc = new ClientControls(this, this.host);
         id = propertyList.getSelectedValue().toString();
-        //AddTenant addWindow = new AddTenant(id);
+        AddTenant addWindow = new AddTenant(id);
     }
 
     // TODO Add phone & email to JList
