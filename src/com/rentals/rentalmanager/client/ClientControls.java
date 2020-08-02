@@ -19,7 +19,6 @@ public class ClientControls {
     ObjectOutputStream outputStream;
     ObjectInputStream inputStream;
 
-
     public ClientControls(ClientGUI gui, String server) throws IOException {
         this.server = server;
         this.gui = gui;
@@ -98,6 +97,34 @@ public class ClientControls {
         boolean success = inputStream.readBoolean();
         close();
         return success;
+    }
+
+    public boolean addNewTenant(String id, String name) throws IOException {
+        connect();
+        outputStream.writeObject(RequestType.NEWTENANT);
+
+        outputStream.writeObject(id);
+        outputStream.writeObject(name);
+
+        boolean success = inputStream.readBoolean();
+        if(!success) {
+            try {
+                // read the error message
+                this.error = (String) inputStream.readObject();
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            }
+        }
+        close();
+        return success;
+    }
+
+    public boolean hasTenant(RentalProperty property) {
+        int numTenants = property.getTenantNames().length;
+        if(!((numTenants) == 0)) {
+            return true;
+        } else
+            return false;
     }
 
     public List<String> search(PropertySearch s) throws IOException, ClassNotFoundException {

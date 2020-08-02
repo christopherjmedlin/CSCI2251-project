@@ -2,10 +2,7 @@ package com.rentals.rentalmanager.client;
 
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
-import com.rentals.rentalmanager.common.PropertySearch;
-import com.rentals.rentalmanager.common.RentalProperty;
-import com.rentals.rentalmanager.common.RequestType;
-import com.rentals.rentalmanager.common.SingleHouse;
+import com.rentals.rentalmanager.common.*;
 import com.rentals.rentalmanager.server.ProcessRequest;
 import com.rentals.rentalmanager.server.db.PropertyQueries;
 
@@ -51,6 +48,7 @@ public class ClientGUI extends JFrame {
     private JButton generateStatementButton;
     private JButton addTenantButton;
     private JButton deletePropertyButton;
+    private JButton editTenantButton;
 
     //class variables
     private String host;
@@ -58,14 +56,20 @@ public class ClientGUI extends JFrame {
     ArrayList<String> idList = new ArrayList<>();
     private int clicks = 0;
     private LocalDate localDate = now();
-    DefaultListModel dlm = new DefaultListModel();
+
+    DefaultListModel dlmProperty = new DefaultListModel();
+    DefaultListModel dlmTenant = new DefaultListModel();
+
 
     private RentalProperty selectedProperty;
 
     //constructor
     public ClientGUI(String host) throws IOException {
         add(guiPanel);
+
         addTenantButton.setVisible(false);
+        editTenantButton.setVisible(false);
+
         this.host = host;
 
         //Action listeners
@@ -80,9 +84,16 @@ public class ClientGUI extends JFrame {
         });
 
         //apply properties to property list
-        propertyList.setModel(dlm);
+        propertyList.setModel(dlmProperty);
 
-        propertyList.addListSelectionListener(e -> setDescription(id));
+        propertyList.addListSelectionListener(e -> {
+            setDescription(id);
+            try {
+                setTenantDescription();
+            } catch (IOException ioException) {
+                ioException.printStackTrace();
+            }
+        });
 
         editPropertyButton.addActionListener(e -> {
             //clicks allows function of button to alternate, when clicks is
@@ -91,13 +102,19 @@ public class ClientGUI extends JFrame {
 
             if (clicks % 2 == 0) {
                 setEditable(false);
+                splitPane.getLeftComponent().setMinimumSize(new Dimension());
+                splitPane.setDividerLocation(0.5d);
                 try {
                     updateProperty();
+                    setDescription(id);
+                    setTenantDescription();
                 } catch (Exception exc) {
                     JOptionPane.showMessageDialog(guiPanel, "Error: " + exc.toString());
                 }
             } else {
                 setEditable(true);
+                splitPane.getLeftComponent().setMinimumSize(new Dimension());
+                splitPane.setDividerLocation(0.0d);
             }
         });
 
@@ -106,6 +123,27 @@ public class ClientGUI extends JFrame {
                 removeFromList();
             } catch (IOException ioException) {
                 ioException.printStackTrace();
+            }
+        });
+
+        addTenantButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    addTenant();
+                } catch (IOException ioe) {
+                    ioe.printStackTrace();
+                }
+            }
+        });
+
+        editTenantButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (tenantList.getSelectedValue() != null) {
+                    testTenant();
+                }
+
             }
         });
 
@@ -132,7 +170,7 @@ public class ClientGUI extends JFrame {
         // attempt to send NEW request to server
         if (cc.addNew(newId)) {
             //add property to GUI list
-            dlm.addElement(newId);
+            dlmProperty.addElement(newId);
 
             //add ID of property to array of strings
             idList.add(newId);
@@ -144,7 +182,6 @@ public class ClientGUI extends JFrame {
     }
 
     // sets fields and text panes to selected property's values
-    // TODO add unique values correlating to properties variables
     private void setDescription(String id) {
         // retrieve property from server
         RentalProperty property = null;
@@ -168,7 +205,6 @@ public class ClientGUI extends JFrame {
     }
 
     //sets fields to editable, need to send results to dB
-    // TODO update values with text entered in field
     public void updateProperty() throws IOException, ClassNotFoundException {
         try {
             this.selectedProperty.setBalance(Double.valueOf(balanceField.getText()));
@@ -187,6 +223,10 @@ public class ClientGUI extends JFrame {
         ClientControls cc = new ClientControls(this, this.host);
         if (!cc.updateProperty(this.selectedProperty))
             JOptionPane.showMessageDialog(guiPanel, "Unexpected server error.");
+
+        if (this.selectedProperty.hasTenants()) {
+            setTenantDescription();
+        }
     }
 
     private void setEditable(boolean editable) {
@@ -196,6 +236,7 @@ public class ClientGUI extends JFrame {
         moveInDateField.setEditable(editable);
         descriptionPane.setEditable(editable);
         addTenantButton.setVisible(editable);
+        editTenantButton.setVisible(editable);
     }
 
     private void search() {
@@ -223,8 +264,8 @@ public class ClientGUI extends JFrame {
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
-        dlm.clear();
-        dlm.addAll(ids);
+        dlmProperty.clear();
+        dlmProperty.addAll(ids);
     }
 
     private void removeFromList() throws IOException {
@@ -234,11 +275,41 @@ public class ClientGUI extends JFrame {
         int selectedIndex = propertyList.getSelectedIndex();
 
         if (selectedIndex != 1) {
-            dlm.remove(selectedIndex);
+            dlmProperty.remove(selectedIndex);
         }
 
         cc.deleteProperty(id);
 
+    }
+
+    public void addTenant() throws IOException {
+        ClientControls cc = new ClientControls(this, this.host);
+        id = propertyList.getSelectedValue().toString();
+        AddTenant addWindow = new AddTenant(id);
+    }
+
+    // TODO Add phone & email to JList
+    private void setTenantDescription() throws IOException {
+        ClientControls cc = new ClientControls(this, this.host);
+
+        String[] tenants = this.selectedProperty.getTenantNames();
+        boolean hasTenants = cc.hasTenant(this.selectedProperty);
+
+        //important to repaint jList, duplicates tenants without this
+        dlmTenant.removeAllElements();
+
+        if (hasTenants) {
+            for (int i = 0; i < tenants.length; i++) {
+
+                dlmTenant.addElement(tenants[i]);
+                tenantList.setModel(dlmTenant);
+            }
+        }
+    }
+
+    private void testTenant() {
+        Tenant tenant = this.selectedProperty.getTenant(tenantList.getSelectedValue().toString());
+        EditTenant et = new EditTenant(tenant);
     }
 
     {
@@ -296,13 +367,13 @@ public class ClientGUI extends JFrame {
         addPropertyButton.setText("Add Property");
         leftPanel.add(addPropertyButton, new GridConstraints(3, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         rightPanel = new JPanel();
-        rightPanel.setLayout(new GridLayoutManager(7, 3, new Insets(0, 0, 0, 0), -1, -1));
+        rightPanel.setLayout(new GridLayoutManager(7, 4, new Insets(0, 0, 0, 0), -1, -1));
         splitPane.setRightComponent(rightPanel);
         tenInfoLabel = new JLabel();
         Font tenInfoLabelFont = this.$$$getFont$$$(null, -1, 12, tenInfoLabel.getFont());
         if (tenInfoLabelFont != null) tenInfoLabel.setFont(tenInfoLabelFont);
         tenInfoLabel.setText("Tenant Information");
-        rightPanel.add(tenInfoLabel, new GridConstraints(4, 0, 1, 3, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        rightPanel.add(tenInfoLabel, new GridConstraints(4, 0, 1, 4, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         frontyardLabel = new JLabel();
         frontyardLabel.setText("Balance:");
         rightPanel.add(frontyardLabel, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
@@ -315,30 +386,33 @@ public class ClientGUI extends JFrame {
         tenantList = new JList();
         final DefaultListModel defaultListModel1 = new DefaultListModel();
         tenantList.setModel(defaultListModel1);
-        rightPanel.add(tenantList, new GridConstraints(5, 0, 1, 3, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_WANT_GROW, null, new Dimension(150, 50), null, 0, false));
+        rightPanel.add(tenantList, new GridConstraints(5, 0, 1, 4, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_WANT_GROW, null, new Dimension(150, 50), null, 0, false));
         descriptionPane = new JTextPane();
         descriptionPane.setEditable(false);
         descriptionPane.setText("Property description string will be displayed here");
-        rightPanel.add(descriptionPane, new GridConstraints(3, 0, 1, 3, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_WANT_GROW, null, new Dimension(150, 50), null, 0, false));
+        rightPanel.add(descriptionPane, new GridConstraints(3, 0, 1, 4, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_WANT_GROW, null, new Dimension(150, 50), null, 0, false));
         generateStatementButton = new JButton();
         generateStatementButton.setText("Generate Statement");
-        rightPanel.add(generateStatementButton, new GridConstraints(6, 2, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        rightPanel.add(generateStatementButton, new GridConstraints(6, 3, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         addTenantButton = new JButton();
         addTenantButton.setText("Add Tenant");
         rightPanel.add(addTenantButton, new GridConstraints(6, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         rentField = new JTextField();
         rentField.setEditable(false);
-        rightPanel.add(rentField, new GridConstraints(0, 2, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
+        rightPanel.add(rentField, new GridConstraints(0, 2, 1, 2, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
         balanceField = new JTextField();
         balanceField.setEditable(false);
         balanceField.setText("");
-        rightPanel.add(balanceField, new GridConstraints(1, 2, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
+        rightPanel.add(balanceField, new GridConstraints(1, 2, 1, 2, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
         moveInDateField = new JTextField();
         moveInDateField.setEditable(false);
-        rightPanel.add(moveInDateField, new GridConstraints(2, 2, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
+        rightPanel.add(moveInDateField, new GridConstraints(2, 2, 1, 2, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
         final JLabel label1 = new JLabel();
         label1.setText("Move in date:");
         rightPanel.add(label1, new GridConstraints(2, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        editTenantButton = new JButton();
+        editTenantButton.setText("Edit Tenant");
+        rightPanel.add(editTenantButton, new GridConstraints(6, 2, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
     }
 
     /**
@@ -366,5 +440,6 @@ public class ClientGUI extends JFrame {
     public JComponent $$$getRootComponent$$$() {
         return guiPanel;
     }
+
 
 }
