@@ -48,8 +48,17 @@ public abstract class RentalProperty implements Serializable {
      */
     protected Period rentalPeriod() {
         LocalDate date = this.getMoveInDate();
-        if (endOfMonth)
-            return Period.between(date.withDayOfMonth(date.lengthOfMonth()), LocalDate.now());
+        Period period;
+        if (endOfMonth) {
+            period = Period.between(date.withDayOfMonth(date.lengthOfMonth()), LocalDate.now());
+        } else {
+            period = Period.between(date, LocalDate.now());
+        }
+
+        if (period.isNegative()) {
+            // if it's negative, just return a period with no time.
+            return Period.of(0,0,0);
+        }
         return Period.between(date, LocalDate.now());
     }
 
@@ -67,10 +76,10 @@ public abstract class RentalProperty implements Serializable {
      * (less than 1 week), and 2 if payment is late.
      */
     public int paymentStatus() {
-        if (dueDateApproaching())
-            return 1;
         if (this.balance < this.price * dueDatesSinceMoveIn())
             return 2;
+        if (dueDateApproaching())
+            return 1;
 
         return 0;
     }

@@ -10,8 +10,8 @@ public class VacationRental extends RentalProperty {
     public VacationRental(double balance, double price, String id, String description, LocalDate moveIn,
                           boolean endOfMonth) {
         super(balance, price, id, description, moveIn, endOfMonth);
-        // daily for now.
-        this.paymentType = 1;
+        // monthly for now.
+        this.paymentType = 2;
     }
 
     @Override
@@ -19,6 +19,7 @@ public class VacationRental extends RentalProperty {
         // initialize to 1 to include the initial payment
         int dueDates = 1;
         Period duration = this.rentalPeriod();
+
         switch (this.paymentType) {
             case 1:
                 dueDates += duration.getDays();

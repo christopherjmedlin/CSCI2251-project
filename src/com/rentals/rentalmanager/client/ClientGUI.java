@@ -203,16 +203,19 @@ public class ClientGUI extends JFrame {
         switch (this.comboBox2.getSelectedIndex()) {
             case 0:
                 paymentStatus = 1;
+                break;
             case 1:
                 paymentStatus = 2;
+                break;
             case 2:
                 paymentStatus = 0;
+                break;
         }
 
         PropertySearch searchParameters = new PropertySearch(
                 this.searchField.getText(),
                 paymentStatus,
-                comboBox2.getSelectedIndex() == 1
+                comboBox1.getSelectedIndex() == 1
         );
 
         List<String> ids = new ArrayList<>(0);
