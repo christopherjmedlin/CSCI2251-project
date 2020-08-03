@@ -6,7 +6,6 @@ import com.rentals.rentalmanager.common.*;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
-import javax.tools.Tool;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -51,6 +50,7 @@ public class ClientGUI extends JFrame {
     private JTextField subtractBalanceField;
     private JLabel balance;
     private JButton editTenantButton;
+    private JButton sendStatementButton;
 
     //class variables
     private String host;
@@ -156,6 +156,8 @@ public class ClientGUI extends JFrame {
         addBalanceField.addActionListener(e -> updateBalance(true));
         subtractBalanceField.addActionListener(e -> updateBalance(false));
         generateStatementButton.addActionListener(e -> generateStatement());
+
+        sendStatementButton.addActionListener(e -> new SendMailWindow(this.selectedProperty, this.host, this));
 
         // populate with initial search
         this.search();
@@ -399,13 +401,8 @@ public class ClientGUI extends JFrame {
         addPropertyButton.setText("Add Property");
         leftPanel.add(addPropertyButton, new GridConstraints(3, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         rightPanel = new JPanel();
-        rightPanel.setLayout(new GridLayoutManager(9, 4, new Insets(0, 0, 0, 0), -1, -1));
+        rightPanel.setLayout(new GridLayoutManager(9, 5, new Insets(0, 0, 0, 0), -1, -1));
         splitPane.setRightComponent(rightPanel);
-        tenInfoLabel = new JLabel();
-        Font tenInfoLabelFont = this.$$$getFont$$$(null, -1, 12, tenInfoLabel.getFont());
-        if (tenInfoLabelFont != null) tenInfoLabel.setFont(tenInfoLabelFont);
-        tenInfoLabel.setText("Tenant Information");
-        rightPanel.add(tenInfoLabel, new GridConstraints(6, 0, 1, 4, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         frontyardLabel = new JLabel();
         frontyardLabel.setText("Balance:");
         rightPanel.add(frontyardLabel, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
@@ -418,11 +415,11 @@ public class ClientGUI extends JFrame {
         tenantList = new JList();
         final DefaultListModel defaultListModel1 = new DefaultListModel();
         tenantList.setModel(defaultListModel1);
-        rightPanel.add(tenantList, new GridConstraints(7, 0, 1, 4, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_WANT_GROW, null, new Dimension(150, 50), null, 0, false));
+        rightPanel.add(tenantList, new GridConstraints(7, 0, 1, 5, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_WANT_GROW, null, new Dimension(150, 50), null, 0, false));
         descriptionPane = new JTextPane();
         descriptionPane.setEditable(false);
         descriptionPane.setText("Property description string will be displayed here");
-        rightPanel.add(descriptionPane, new GridConstraints(5, 0, 1, 4, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_WANT_GROW, null, new Dimension(150, 50), null, 0, false));
+        rightPanel.add(descriptionPane, new GridConstraints(5, 0, 1, 5, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_WANT_GROW, null, new Dimension(150, 50), null, 0, false));
         generateStatementButton = new JButton();
         generateStatementButton.setText("Generate Statement");
         rightPanel.add(generateStatementButton, new GridConstraints(8, 3, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
@@ -431,10 +428,10 @@ public class ClientGUI extends JFrame {
         rightPanel.add(addTenantButton, new GridConstraints(8, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         rentField = new JTextField();
         rentField.setEditable(false);
-        rightPanel.add(rentField, new GridConstraints(0, 2, 1, 2, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
+        rightPanel.add(rentField, new GridConstraints(0, 3, 1, 2, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
         moveInDateField = new JTextField();
         moveInDateField.setEditable(false);
-        rightPanel.add(moveInDateField, new GridConstraints(4, 2, 1, 2, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
+        rightPanel.add(moveInDateField, new GridConstraints(4, 3, 1, 2, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
         final JLabel label1 = new JLabel();
         label1.setText("Move in date:");
         rightPanel.add(label1, new GridConstraints(4, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
@@ -444,20 +441,28 @@ public class ClientGUI extends JFrame {
         balance = new JLabel();
         balance.setText("$0.00");
         rightPanel.add(balance, new GridConstraints(1, 3, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        addBalanceField = new JTextField();
-        addBalanceField.setEditable(false);
-        addBalanceField.setText("0.00");
-        rightPanel.add(addBalanceField, new GridConstraints(2, 3, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
         subtractBalanceField = new JTextField();
         subtractBalanceField.setEditable(false);
         subtractBalanceField.setText("0.00");
-        rightPanel.add(subtractBalanceField, new GridConstraints(3, 3, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
+        rightPanel.add(subtractBalanceField, new GridConstraints(3, 3, 1, 2, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
         final JLabel label2 = new JLabel();
         label2.setText("Add balance:");
         rightPanel.add(label2, new GridConstraints(2, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         final JLabel label3 = new JLabel();
         label3.setText("Subtract balance:");
         rightPanel.add(label3, new GridConstraints(3, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        sendStatementButton = new JButton();
+        sendStatementButton.setText("Send Statement");
+        rightPanel.add(sendStatementButton, new GridConstraints(8, 4, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        addBalanceField = new JTextField();
+        addBalanceField.setEditable(false);
+        addBalanceField.setText("0.00");
+        rightPanel.add(addBalanceField, new GridConstraints(2, 3, 1, 2, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
+        tenInfoLabel = new JLabel();
+        Font tenInfoLabelFont = this.$$$getFont$$$(null, -1, 12, tenInfoLabel.getFont());
+        if (tenInfoLabelFont != null) tenInfoLabel.setFont(tenInfoLabelFont);
+        tenInfoLabel.setText("Tenant Information");
+        rightPanel.add(tenInfoLabel, new GridConstraints(6, 1, 1, 3, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
     }
 
     /**

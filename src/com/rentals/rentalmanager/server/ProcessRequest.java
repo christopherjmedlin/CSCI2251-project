@@ -117,8 +117,10 @@ public class ProcessRequest implements Runnable {
         String id = (String) in.readObject();
 
         char propertyType = id.charAt(0);
-        if (propertyType != 'S' && propertyType != 'A' && propertyType != 'V')
+        if (propertyType != 'S' && propertyType != 'A' && propertyType != 'V') {
             sendError("Property ID must begin with S, A, or V (the property type)");
+            return;
+        }
 
         try {
             db.newProperty(id);
@@ -188,6 +190,12 @@ public class ProcessRequest implements Runnable {
     private void mailRequest() throws IOException, ClassNotFoundException {
         LOGGER.info("Processing MAIL request.");
 
+        if (!Boolean.parseBoolean(config.getProperty("mailEnabled"))) {
+            sendError("Error sending mail: Mail must be enabled on the server in the server.properties file.");
+            LOGGER.warning("Mail not enabled.");
+            return;
+        }
+
         String username = config.getProperty("from").split("@")[0];
         System.out.println(username);
         Session session = Session.getDefaultInstance(config, new Authenticator() {
@@ -204,7 +212,7 @@ public class ProcessRequest implements Runnable {
                 message.addRecipient(Message.RecipientType.TO, new InternetAddress(addr));
             }
             message.setSubject("Billing Statement");
-            message.setText((String) in.readObject());
+            message.setContent((String) in.readObject(), "text/html");
 
             LOGGER.info("Sending mail.");
             Transport.send(message);

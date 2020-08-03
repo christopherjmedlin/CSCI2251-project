@@ -136,6 +136,24 @@ public class ClientControls {
         return ids;
     }
 
+    public boolean sendMail(List<String> addresses, String message) throws IOException {
+        connect();
+        outputStream.writeObject(RequestType.MAIL);
+        outputStream.writeObject(addresses);
+        outputStream.writeObject(message);
+        boolean success = inputStream.readBoolean();
+        if(!success) {
+            try {
+                // read the error message
+                this.error = (String) inputStream.readObject();
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            }
+        }
+        close();
+        return success;
+    }
+
     // if a server communication went wrong, this method will return the message.
     public String getErrorMessage() {
         return this.error;
