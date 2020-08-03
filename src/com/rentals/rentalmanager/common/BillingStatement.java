@@ -7,7 +7,7 @@ public class BillingStatement {
             "%s" +
             "Property Type: %s\n\n" +
             "Next Due Date: %s\n" +
-            "Balance: %f";
+            "Balance: %.00f";
     RentalProperty property;
 
     public BillingStatement(RentalProperty p) {
