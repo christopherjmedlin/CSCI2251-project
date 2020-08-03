@@ -1,5 +1,6 @@
 package com.rentals.rentalmanager.client;
 
+import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.rentals.rentalmanager.common.RentalProperty;
 import com.rentals.rentalmanager.common.RequestType;
 
@@ -52,7 +53,7 @@ public class Client extends JFrame {
      */
     private void $$$setupUI$$$() {
         mainPanel = new JPanel();
-        mainPanel.setLayout(new com.intellij.uiDesigner.core.GridLayoutManager(1, 1, new Insets(0, 0, 0, 0), -1, -1));
+        mainPanel.setLayout(new GridLayoutManager(1, 1, new Insets(0, 0, 0, 0), -1, -1));
     }
 
     /**
@@ -61,5 +62,6 @@ public class Client extends JFrame {
     public JComponent $$$getRootComponent$$$() {
         return mainPanel;
     }
+
 }
 

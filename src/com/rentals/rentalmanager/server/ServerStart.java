@@ -1,5 +1,7 @@
 package com.rentals.rentalmanager.server;
 
+import com.rentals.rentalmanager.common.PropertySearch;
+
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -16,8 +18,8 @@ public class ServerStart {
     private Properties config;
 
     public ServerStart(Properties config) {
-        this.config = config;
         this.exec = Executors.newCachedThreadPool();
+        this.config = config;
     }
 
     public void run(String dbUser, String dbPass) throws IOException {
@@ -29,8 +31,7 @@ public class ServerStart {
             LOGGER.info("Connection accepted from " + sock.getRemoteSocketAddress().toString() + ".");
             exec.execute(new ProcessRequest(
                     sock,
-                    this.config.getProperty("dbuser", "testing"),
-                    this.config.getProperty("dbpass", "testing")
+                    this.config
             ));
         }
     }

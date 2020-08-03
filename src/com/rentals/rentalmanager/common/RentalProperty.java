@@ -12,16 +12,21 @@ public abstract class RentalProperty implements Serializable {
     private String id;
     private String description;
     private LocalDate moveIn;
+    // if this is true, due dates are processed based on the end of the month. otherwise, they are processed based on
+    // move in date (e.g. first due date is 1 year after due date, second is 1 year and one month, etc...)
+    private boolean endOfMonth;
     // since tenants are displayed as a list of their names in the client, it seems reasonable to store them in a
     // hashmap with the keys being their full names, appending an id if the name already exists in the hashmap.
     private HashMap<String, Tenant> tenants;
 
-    public RentalProperty(double balance, double price, String id, String description, LocalDate moveIn) {
+    public RentalProperty(double balance, double price, String id, String description, LocalDate moveIn,
+                          boolean endOfMonth) {
         this.balance = balance;
         this.price = price;
         this.id = id;
         this.description = description;
         this.moveIn = moveIn;
+        this.endOfMonth = endOfMonth;
 
         this.tenants = new HashMap<>();
     }
@@ -35,18 +40,12 @@ public abstract class RentalProperty implements Serializable {
     /**
      * Returns the next due date based on the current date.
      */
-    protected abstract LocalDate nextDueDate();
-
-    /**
-     * Helper method for calculating the duration between the move-in date and the current date
-     * (intended to be used by subclasses)
-     */
-    protected Period rentalPeriod() {
-        return Period.between(this.getMoveInDate(), LocalDate.now());
-    }
+    public abstract LocalDate nextDueDate();
 
     public boolean dueDateApproaching() {
         LocalDate dueDate = this.nextDueDate();
+        if (endOfMonth)
+            dueDate = dueDate.withDayOfMonth(dueDate.lengthOfMonth());
         Period per = Period.between(LocalDate.now(), dueDate);
         // TODO make this configurable as something other than a week.
         return per.getDays() <= 7;
@@ -57,10 +56,10 @@ public abstract class RentalProperty implements Serializable {
      * (less than 1 week), and 2 if payment is late.
      */
     public int paymentStatus() {
-        if (dueDateApproaching())
-            return 1;
         if (this.balance < this.price * dueDatesSinceMoveIn())
             return 2;
+        if (dueDateApproaching())
+            return 1;
 
         return 0;
     }
@@ -137,6 +136,13 @@ public abstract class RentalProperty implements Serializable {
      */
     public String[] getTenantNames() {
         return this.tenants.keySet().toArray(new String[tenants.size()]);
+    }
+
+    /**
+     * Subtracts the amount that should be payed from the balance.
+     */
+    public double calculateBalance() {
+        return this.balance - (this.price * dueDatesSinceMoveIn());
     }
 
     @Override

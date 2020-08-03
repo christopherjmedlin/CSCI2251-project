@@ -83,7 +83,7 @@ public class ServerTest {
     private static void testUpdate() throws IOException, ClassNotFoundException {
         connect();
         RentalProperty update = new VacationRental(100.00, 100.00, "VABQ555",
-                "vacation rental", LocalDate.now());
+                "vacation rental", LocalDate.now(), false);
         out.writeObject(RequestType.UPDATE);
         out.writeObject(update);
         assert in.readBoolean();
