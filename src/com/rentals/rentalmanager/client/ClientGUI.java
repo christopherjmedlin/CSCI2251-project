@@ -301,7 +301,7 @@ public class ClientGUI extends JFrame {
     }
 
     public void addTenant() throws IOException {
-        id = propertyList.getSelectedValue().toString();
+        id = propertyList.getSelectedValue();
         new AddTenant(id, this);
     }
 
