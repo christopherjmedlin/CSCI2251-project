@@ -34,7 +34,7 @@ public class Client extends JFrame {
 
         ClientGUI guiPanel = new ClientGUI(host);
         add(guiPanel.getGuiPanel());
-        this.setSize(720, 300);
+        this.setSize(720, 325);
     }
 
     {

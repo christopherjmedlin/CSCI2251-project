@@ -119,6 +119,24 @@ public class ClientControls {
         return success;
     }
 
+    public boolean deleteTenant(int tenantId) throws IOException {
+        connect();
+        outputStream.writeObject(RequestType.DELETETENANT);
+        outputStream.writeObject(tenantId);
+
+        boolean success = inputStream.readBoolean();
+        if(!success) {
+            try {
+                // read the error message
+                this.error = (String) inputStream.readObject();
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            }
+        }
+        close();
+        return success;
+    }
+
     public boolean hasTenant(RentalProperty property) {
         int numTenants = property.getTenantNames().length;
         if(!((numTenants) == 0)) {

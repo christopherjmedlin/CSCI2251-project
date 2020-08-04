@@ -69,6 +69,7 @@ public class AddTenant extends JFrame {
         });
 
         setVisible(true);
+        setLocationRelativeTo(null);
     }
 
     private void confirmTenant() throws IOException {

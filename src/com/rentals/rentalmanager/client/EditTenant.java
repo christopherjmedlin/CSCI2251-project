@@ -11,8 +11,7 @@ import java.io.IOException;
         Container container;
         private JTextField firstName, lastName, email, phone;
         private JLabel first, last, emailaddress, phoneNumber;
-        private JButton save;
-        private JButton deleteTenant;
+        private JButton save, cancel;
 
         public EditTenant(Tenant tenant) {
             setTitle("Edit Tenant Information");
@@ -62,10 +61,10 @@ import java.io.IOException;
             save.setBounds(15,185,150,20);
             container.add(save);
 
-            deleteTenant = new JButton();
-            deleteTenant.setText("Delete Tenant");
-            deleteTenant.setBounds(170,185,150,20);
-            container.add(deleteTenant);
+            cancel = new JButton();
+            cancel.setText("Cancel");
+            cancel.setBounds(170,185,150,20);
+            container.add(cancel);
 
             save.addActionListener(e -> {
                 try {
@@ -75,14 +74,21 @@ import java.io.IOException;
                 }
                 super.dispose();
             });
+
+            cancel.addActionListener(e -> {
+                super.dispose();
+            });
+
+            setLocationRelativeTo(null);
             setVisible(true);
         }
 
-        public void setTenantInfo(Tenant tenant) throws IOException {
+        private void setTenantInfo(Tenant tenant) throws IOException {
             tenant.setFirstName(firstName.getText());
             tenant.setLastName(lastName.getText());
             tenant.setEmail(email.getText());
             tenant.setPhone(phone.getText());
         }
+
 
 }
