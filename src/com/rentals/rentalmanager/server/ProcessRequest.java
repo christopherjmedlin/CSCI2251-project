@@ -190,7 +190,7 @@ public class ProcessRequest implements Runnable {
     private void mailRequest() throws IOException, ClassNotFoundException {
         LOGGER.info("Processing MAIL request.");
 
-        if (!Boolean.parseBoolean(config.getProperty("mailEnabled"))) {
+        if (!Boolean.parseBoolean(config.getProperty("enableMail"))) {
             sendError("Error sending mail: Mail must be enabled on the server in the server.properties file.");
             LOGGER.warning("Mail not enabled.");
             return;
