@@ -9,6 +9,9 @@
         <javac srcdir="src" destdir="build/classes">
             <classpath>
                 <pathelement path="lib/forms_rt.jar"/>
+                <pathelement path="lib/mail-1.5.0-b01.jar"/>
+                <pathelement path="lib/javax.activation-api-1.2.0.jar"/>
+                <pathelement path="lib/javax.activation-1.2.0.jar"/>
             </classpath>
         </javac>
     </target>
@@ -60,6 +63,9 @@
                 <pathelement path="build/dist/server/server.jar"/>
                 <pathelement path="lib/derby.jar"/>
                 <pathelement path="lib/derbyclient.jar"/>
+                <pathelement path="lib/mail-1.5.0-b01.jar"/>
+                <pathelement path="lib/javax.activation-api-1.2.0.jar"/>
+                <pathelement path="lib/javax.activation-1.2.0.jar"/>
             </classpath>
         </java>
     </target>
