@@ -7,7 +7,7 @@ public class BillingStatement {
             "%s" +
             "<b>Property Type:</b> %s<br /><br />" +
             "<b>Next Due Date:</b> %s<br />" +
-            "<b>Balance:</b> %.00f";
+            "<b>Balance:</b> $%.00f";
     RentalProperty property;
 
     public BillingStatement(RentalProperty p) {
