@@ -14,6 +14,9 @@ import java.net.Socket;
 import java.util.List;
 import java.util.Properties;
 import java.util.logging.Logger;
+import javax.mail.*;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeMessage;
 
 /**
  * The ProcessRequest task reads a request from a socket, processes it, and returns an appropriate response
@@ -82,6 +85,9 @@ public class ProcessRequest implements Runnable {
                 case DELETETENANT:
                     deleteTenantRequest(properties);
                     break;
+                case MAIL:
+                    mailRequest();
+                    break;
             }
             // flush the output stream
             this.out.flush();
@@ -111,8 +117,10 @@ public class ProcessRequest implements Runnable {
         String id = (String) in.readObject();
 
         char propertyType = id.charAt(0);
-        if (propertyType != 'S' && propertyType != 'A' && propertyType != 'V')
+        if (propertyType != 'S' && propertyType != 'A' && propertyType != 'V') {
             sendError("Property ID must begin with S, A, or V (the property type)");
+            return;
+        }
 
         try {
             db.newProperty(id);
@@ -166,8 +174,10 @@ public class ProcessRequest implements Runnable {
         String propertyId = (String) in.readObject();
         // read the full name of the tenant
         String name = (String) in.readObject();
-        new TenantQueries(db.getConnection()).newTenant(propertyId, name);
+        int id = new TenantQueries(db.getConnection()).newTenant(propertyId, name);
         out.writeBoolean(true);
+        // return the id of the new tenant created
+        out.writeInt(id);
     }
 
     // handles a request to delete a tenant
@@ -177,6 +187,42 @@ public class ProcessRequest implements Runnable {
         int tenantId = in.readInt();
         new TenantQueries(db.getConnection()).deleteTenant(tenantId);
         out.writeBoolean(true);
+    }
+
+    private void mailRequest() throws IOException, ClassNotFoundException {
+        LOGGER.info("Processing MAIL request.");
+
+        if (!Boolean.parseBoolean(config.getProperty("enableMail"))) {
+            sendError("Error sending mail: Mail must be enabled on the server in the server.properties file.");
+            LOGGER.warning("Mail not enabled.");
+            return;
+        }
+
+        String username = config.getProperty("from").split("@")[0];
+        System.out.println(username);
+        Session session = Session.getDefaultInstance(config, new Authenticator() {
+            @Override
+            protected PasswordAuthentication getPasswordAuthentication() {
+                return new PasswordAuthentication(username, config.getProperty("emailPass"));
+            }
+        });
+        try {
+            MimeMessage message = new MimeMessage(session);
+            message.setFrom(config.getProperty("from"));
+            // read addresses and add as recipients to the message
+            for (String addr : (List<String>) in.readObject()) {
+                message.addRecipient(Message.RecipientType.TO, new InternetAddress(addr));
+            }
+            message.setSubject("Billing Statement");
+            message.setContent((String) in.readObject(), "text/html");
+
+            LOGGER.info("Sending mail.");
+            Transport.send(message);
+            out.writeBoolean(true);
+        } catch (MessagingException e) {
+            LOGGER.severe(e.toString());
+            sendError("Error sending mail: " + e.toString());
+        }
     }
 
     private void sendError(String message) throws IOException {

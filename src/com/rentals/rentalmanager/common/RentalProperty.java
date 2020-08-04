@@ -139,6 +139,13 @@ public abstract class RentalProperty implements Serializable {
     }
 
     /**
+     * Removes a tenant from the tenant hashmap
+     */
+    public void removeTenant(String name) {
+        this.tenants.remove(name);
+    }
+
+    /**
      * Subtracts the amount that should be payed from the balance.
      */
     public double calculateBalance() {

@@ -11,11 +11,20 @@ import java.io.IOException;
         Container container;
         private JTextField firstName, lastName, email, phone;
         private JLabel first, last, emailaddress, phoneNumber;
-        private JButton save, cancel;
+        private JButton save;
+        private JButton deleteTenant;
 
-        public EditTenant(Tenant tenant) {
+        private ClientGUI parent;
+        private Tenant tenant;
+        private String host;
+
+        public EditTenant(Tenant tenant, ClientGUI parent, String host) {
             setTitle("Edit Tenant Information");
             setSize(350,250);
+
+            this.tenant = tenant;
+            this.parent = parent;
+            this.host = host;
 
             container = getContentPane();
             container.setLayout(null);
@@ -61,34 +70,41 @@ import java.io.IOException;
             save.setBounds(15,185,150,20);
             container.add(save);
 
-            cancel = new JButton();
-            cancel.setText("Cancel");
-            cancel.setBounds(170,185,150,20);
-            container.add(cancel);
+            deleteTenant = new JButton();
+            deleteTenant.setText("Delete Tenant");
+            deleteTenant.setBounds(170,185,150,20);
+            container.add(deleteTenant);
 
+            deleteTenant.addActionListener(e -> deleteTenant());
             save.addActionListener(e -> {
                 try {
-                    setTenantInfo(tenant);
+                    setTenantInfo();
                 } catch (IOException ioException) {
                     ioException.printStackTrace();
                 }
                 super.dispose();
             });
-
-            cancel.addActionListener(e -> {
-                super.dispose();
-            });
-
-            setLocationRelativeTo(null);
             setVisible(true);
         }
 
-        private void setTenantInfo(Tenant tenant) throws IOException {
+        private void setTenantInfo() throws IOException {
             tenant.setFirstName(firstName.getText());
             tenant.setLastName(lastName.getText());
             tenant.setEmail(email.getText());
             tenant.setPhone(phone.getText());
         }
 
+        private void deleteTenant() {
+            // sends delete request to server
+            try {
+                new ClientControls(this.parent, this.host).deleteTenant(this.tenant.getId());
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(this, "Unexpected error deleting tenant");
+                super.dispose();
+            }
+            // removes the selected tenant from the list and property in the ClientGUI
+            parent.removeTenant();
 
+            super.dispose();
+        }
 }
