@@ -22,6 +22,7 @@ public class ClientControls {
     public ClientControls(ClientGUI gui, String server) throws IOException {
         this.server = server;
         this.gui = gui;
+        error = "";
     }
 
     public void connect() throws IOException {
@@ -99,7 +100,7 @@ public class ClientControls {
         return success;
     }
 
-    public boolean addNewTenant(String id, String name) throws IOException {
+    public int addNewTenant(String id, String name) throws IOException {
         connect();
         outputStream.writeObject(RequestType.NEWTENANT);
 
@@ -114,17 +115,12 @@ public class ClientControls {
             } catch (ClassNotFoundException e) {
                 e.printStackTrace();
             }
+        } else {
+            // return the id of the new tenant
+            return inputStream.readInt();
         }
         close();
-        return success;
-    }
-
-    public boolean hasTenant(RentalProperty property) {
-        int numTenants = property.getTenantNames().length;
-        if(!((numTenants) == 0)) {
-            return true;
-        } else
-            return false;
+        return 0;
     }
 
     public List<String> search(PropertySearch s) throws IOException, ClassNotFoundException {
@@ -134,6 +130,16 @@ public class ClientControls {
         List<String> ids = inputStream.readBoolean() ? (List<String>) inputStream.readObject() : null;
         close();
         return ids;
+    }
+
+    public boolean deleteTenant(int id) throws IOException {
+        connect();
+        outputStream.writeObject(RequestType.DELETETENANT);
+        outputStream.writeInt(id);
+        outputStream.flush();
+        boolean success = inputStream.readBoolean();
+        close();
+        return success;
     }
 
     // if a server communication went wrong, this method will return the message.

@@ -88,11 +88,7 @@ public class ClientGUI extends JFrame {
 
         propertyList.addListSelectionListener(e -> {
             setDescription(id);
-            try {
-                setTenantDescription();
-            } catch (IOException ioException) {
-                ioException.printStackTrace();
-            }
+            setTenantDescription();
         });
 
         editPropertyButton.addActionListener(e -> {
@@ -283,24 +279,24 @@ public class ClientGUI extends JFrame {
     }
 
     public void addTenant() throws IOException {
-        ClientControls cc = new ClientControls(this, this.host);
         id = propertyList.getSelectedValue().toString();
-        AddTenant addWindow = new AddTenant(id);
+        new AddTenant(id, this);
+    }
+
+    public void addTenantToList(int id, String firstName, String lastName) {
+        System.out.println(selectedProperty);
+        selectedProperty.addTenant(new Tenant(id, firstName, lastName));
+        setTenantDescription();
     }
 
     // TODO Add phone & email to JList
-    private void setTenantDescription() throws IOException {
-        ClientControls cc = new ClientControls(this, this.host);
-
+    public void setTenantDescription() {
         String[] tenants = this.selectedProperty.getTenantNames();
-        boolean hasTenants = cc.hasTenant(this.selectedProperty);
-
         //important to repaint jList, duplicates tenants without this
         dlmTenant.removeAllElements();
 
-        if (hasTenants) {
+        if (selectedProperty.hasTenants()) {
             for (int i = 0; i < tenants.length; i++) {
-
                 dlmTenant.addElement(tenants[i]);
                 tenantList.setModel(dlmTenant);
             }
@@ -309,7 +305,14 @@ public class ClientGUI extends JFrame {
 
     private void testTenant() {
         Tenant tenant = this.selectedProperty.getTenant(tenantList.getSelectedValue().toString());
-        EditTenant et = new EditTenant(tenant);
+        EditTenant et = new EditTenant(tenant, this, this.host);
+    }
+
+    public void removeTenant() {
+        // remove from property
+        selectedProperty.removeTenant((String) tenantList.getSelectedValue());
+        // remove from tenant list
+        dlmTenant.remove(tenantList.getSelectedIndex());
     }
 
     {

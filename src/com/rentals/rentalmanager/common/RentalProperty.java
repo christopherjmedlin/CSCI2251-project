@@ -139,6 +139,13 @@ public abstract class RentalProperty implements Serializable {
         return this.tenants.keySet().toArray(new String[tenants.size()]);
     }
 
+    /**
+     * Removes a tenant from the tenant hashmap
+     */
+    public void removeTenant(String name) {
+        this.tenants.remove(name);
+    }
+
     @Override
     public String toString() {
         return String.format("%s %s %s %s %s", getBalance(), getPrice(), getId(), getDescription(), tenants);
