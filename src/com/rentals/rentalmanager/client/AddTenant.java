@@ -17,13 +17,14 @@ public class AddTenant extends JFrame {
     private String last = "";
     private String phone = "";
     private String email = "";
+    ClientGUI gui;
 
-    ClientGUI gui = new ClientGUI(null);
-
-    public AddTenant(String id) throws IOException {
+    public AddTenant(String id, ClientGUI gui) throws IOException {
         setTitle("Add Tenant");
         setSize(250, 150);
+
         this.id = id;
+        this.gui = gui;
 
         tenantPrompt = getContentPane();
         tenantPrompt.setLayout(null);
@@ -82,7 +83,8 @@ public class AddTenant extends JFrame {
             last = lastNameField.getText();
 
             String name = first + " " + last;
-            cc.addNewTenant(id, name);
+            int tenantId = cc.addNewTenant(id, name);
+            gui.addTenantToList(tenantId, first, last);
             super.dispose();
         }
 

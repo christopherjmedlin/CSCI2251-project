@@ -1,13 +1,9 @@
 package com.rentals.rentalmanager.server.db;
 
-import com.rentals.rentalmanager.common.PropertySearch;
 import com.rentals.rentalmanager.common.RentalProperty;
 import com.rentals.rentalmanager.common.Tenant;
 
 import java.sql.*;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.logging.Logger;
 
 import static java.sql.DriverManager.*;
@@ -40,8 +36,10 @@ public class TenantQueries {
         this.db = db;
         try {
             // creates a new tenant
+            // the string array is the generated keys, which can be retrieved after running the prepared statement
             this.newTenant = db.prepareStatement(
-                    "INSERT INTO tenants (property, name) VALUES (?, ?)"
+                    "INSERT INTO tenants (property, name) VALUES (?, ?)",
+                    Statement.RETURN_GENERATED_KEYS
             );
 
             // gets every tenant associated with a property
@@ -73,7 +71,11 @@ public class TenantQueries {
         try {
             this.newTenant.setString(1, property);
             this.newTenant.setString(2, name);
-            return this.newTenant.executeUpdate();
+            this.newTenant.execute();
+            // get the newly generated id
+            ResultSet id = this.newTenant.getGeneratedKeys();
+            if (id.next())
+                return id.getInt(1);
         } catch (SQLException e) {
             LOGGER.severe(e.toString());
         }

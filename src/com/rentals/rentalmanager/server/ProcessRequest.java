@@ -166,8 +166,10 @@ public class ProcessRequest implements Runnable {
         String propertyId = (String) in.readObject();
         // read the full name of the tenant
         String name = (String) in.readObject();
-        new TenantQueries(db.getConnection()).newTenant(propertyId, name);
+        int id = new TenantQueries(db.getConnection()).newTenant(propertyId, name);
         out.writeBoolean(true);
+        // return the id of the new tenant created
+        out.writeInt(id);
     }
 
     // handles a request to delete a tenant
