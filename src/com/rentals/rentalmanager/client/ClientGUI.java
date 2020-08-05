@@ -77,8 +77,6 @@ public class ClientGUI extends JFrame {
 
         //Action listeners
         addPropertyButton.addActionListener(e -> {
-            System.out.println(idList.toString());
-
             try {
                 addProperty();
             } catch (IOException ioException) {
@@ -102,7 +100,7 @@ public class ClientGUI extends JFrame {
             if (clicks % 2 == 0) {
                 setEditable(false);
                 splitPane.getLeftComponent().setMinimumSize(new Dimension());
-                splitPane.setDividerLocation(0.5d);
+                splitPane.setDividerLocation(0.4d);
                 try {
                     updateProperty();
                     setDescription(id);
@@ -172,7 +170,7 @@ public class ClientGUI extends JFrame {
                 JOptionPane.PLAIN_MESSAGE, null, null, null);
 
         // attempt to send NEW request to server
-        if (cc.addNew(newId)) {
+        if (newId != null && cc.addNew(newId)) {
             //add property to GUI list
             dlmProperty.addElement(newId);
 
@@ -180,9 +178,12 @@ public class ClientGUI extends JFrame {
             idList.add(newId);
             propertyList.setSelectedValue(newId, true);
             setDescription(newId);
+        } else if (newId == null) {
+            JOptionPane.showMessageDialog(guiPanel, "Enter a Property ID");
         } else {
             JOptionPane.showMessageDialog(guiPanel, cc.getErrorMessage());
         }
+        newId = null;
     }
 
     // sets fields and text panes to selected property's values
@@ -308,7 +309,6 @@ public class ClientGUI extends JFrame {
     }
 
     public void addTenantToList(int id, String firstName, String lastName) {
-        System.out.println(selectedProperty);
         selectedProperty.addTenant(new Tenant(id, firstName, lastName));
         setTenantDescription();
     }

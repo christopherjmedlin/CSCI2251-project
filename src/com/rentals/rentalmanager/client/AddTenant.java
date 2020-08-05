@@ -50,7 +50,7 @@ public class AddTenant extends JFrame {
         confirm = new JButton();
         confirm.setText("Confirm");
         confirm.setBounds(15, 70, 100, 30);
-        tenantPrompt.add(confirm);
+        tenantPrompt.add (confirm);
 
         cancel = new JButton();
         cancel.setText("Cancel");
@@ -58,7 +58,7 @@ public class AddTenant extends JFrame {
         tenantPrompt.add(cancel);
 
         cancel.addActionListener(e -> {
-            super.dispose();
+            this.dispose();
         });
 
         confirm.addActionListener(e -> {

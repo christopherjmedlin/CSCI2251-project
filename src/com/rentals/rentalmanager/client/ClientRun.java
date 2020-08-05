@@ -15,6 +15,7 @@ public class ClientRun {
         else {
             app = new Client(args[0]);
         }
+
         app.setVisible(true);
         app.setLocationRelativeTo(null);
         app.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);

@@ -45,22 +45,22 @@ import java.io.IOException;
             phoneNumber.setBounds(60,150,100,20);
             container.add(phoneNumber);
 
-            firstName = new JTextField(8);
+            firstName = new JTextField(12);
             firstName.setText(tenant.getFirstName());
             firstName.setBounds(150,15,100,20);
             container.add(firstName);
 
-            lastName = new JTextField(8);
+            lastName = new JTextField(12);
             lastName.setText(tenant.getLastName());
             lastName.setBounds(150,60,100,20);
             container.add(lastName);
 
-            email = new JTextField(8);
+            email = new JTextField(12);
             email.setText(tenant.getEmail());
             email.setBounds(150,105,100,20);
             container.add(email);
 
-            phone = new JTextField(8);
+            phone = new JTextField(12);
             phone.setText(tenant.getPhone());
             phone.setBounds(150,150,100,20);
             container.add(phone);
