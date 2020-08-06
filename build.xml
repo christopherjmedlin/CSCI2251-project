@@ -46,6 +46,9 @@
         <copy todir="build/dist/server/lib" >
             <fileset dir="lib" includes="**"/>
         </copy>
+        <copy todir="build/dist/client/lib" >
+            <fileset dir="lib" includes="**"/>
+        </copy>
     </target>
 
     <target name="runclient" depends="dist">
