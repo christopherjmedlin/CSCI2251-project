@@ -31,12 +31,14 @@ public class SendMailWindow extends JFrame {
         for (String name : property.getTenantNames()) {
             // create check boxes for every tenant with email
             String email = property.getTenant(name).getEmail();
-            if (email != null) {
+            if (!email.equals("") && email != null) {
                 JCheckBox check = new JCheckBox(email);
                 checkBoxList.add(check);
                 this.add(check);
             }
         }
+        if (checkBoxList.size() == 0)
+            this.add(new JLabel("No tenant emails available for this property."));
         JButton send = new JButton("Send");
         container.add(send);
         send.addActionListener(e -> send());
