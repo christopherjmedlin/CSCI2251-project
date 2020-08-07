@@ -257,8 +257,8 @@ public class ClientGUI extends JFrame {
             case 1:
                 paymentStatus = 2;
                 break;
-            case 2:
-                paymentStatus = 0;
+            case 2: 
+		paymentStatus = 0;
                 break;
         }
 
@@ -280,15 +280,16 @@ public class ClientGUI extends JFrame {
 
     private void removeFromList() throws IOException {
         ClientControls cc = new ClientControls(this, this.host);
-        id = propertyList.getSelectedValue().toString();
+        id = propertyList.getSelectedValue();
 
         int selectedIndex = propertyList.getSelectedIndex();
-
-        if (selectedIndex != 1) {
-            dlmProperty.remove(selectedIndex);
-        }
-
-        cc.deleteProperty(id);
+	
+	if (selectedIndex != -1) {
+        	dlmProperty.remove(selectedIndex);
+ 		cc.deleteProperty(id);
+	} else {
+		JOptionPane.showMessageDialog(this, "Please select a property to delete.");
+	}
     }
 
     /**
@@ -313,7 +314,6 @@ public class ClientGUI extends JFrame {
         setTenantDescription();
     }
 
-    // TODO Add phone & email to JList
     public void setTenantDescription() {
         String[] tenants = this.selectedProperty.getTenantNames();
         //important to repaint jList, duplicates tenants without this
